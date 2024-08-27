@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mem0 Settings</title>
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
+        }
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            width: 340px;
+            padding: 1.25rem;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        input {
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--input));
+            background-color: transparent;
+            color: hsl(var(--foreground));
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsla(var(--ring), 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            border: none;
+            background-color: #000000;
+            color: #ffffff;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #333333;
+        }
+
+        #status {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .logo {
+            width: 140px;
+            height: auto;
+            margin-bottom: 0.75rem;
+        }
+
+        .instructions {
+            font-size: 0.8125rem;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 0.75rem;
+        }
+
+        .instructions a {
+            color: hsl(var(--primary));
+            text-decoration: none;
+        }
+
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://app.mem0.ai/images/light.svg" alt="Mem0 Logo" class="logo" width="100px">
+        <h2>Mem0 Settings</h2>
+        <p class="instructions">
+            Don't have an API key? Get one from your 
+            <a href="https://app.mem0.ai/dashboard/api-keys" target="_blank" rel="noopener noreferrer">Mem0 Dashboard</a>.
+        </p>
+        <div class="input-group">
+            <label for="apiKey">API Key</label>
+            <input type="password" id="apiKey" placeholder="Enter your API key">
+        </div>
+        <div class="input-group">
+            <label for="userId">User ID</label>
+            <input type="text" id="userId" placeholder="Enter your user ID">
+        </div>
+        <button id="saveButton">Save</button>
+        <button id="openDashboardButton">View Memories</button>
+        <p id="status"></p>
+    </div>
+    <ul id="memoriesList"></ul>
+    <script src="popup.js"></script>
+</body>
+</html>
