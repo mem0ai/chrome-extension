@@ -7,7 +7,7 @@ Built using [Mem0](https://www.mem0.ai) ❤️
 
 ## Demo
 
-Check out this video of Claude Memory in action:
+Check out this video of Claude Memory in action (full-resolution video available [here](https://youtu.be/4iP_ADT9N3E)):
 
 https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 
