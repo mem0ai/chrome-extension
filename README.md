@@ -7,7 +7,7 @@ Claude Memory is a Chrome extension that enhances your interaction with Claude b
 
 Check out this video of Claude Memory in action:
 
-[![YouTube](http://i.ytimg.com/vi/4iP_ADT9N3E/hqdefault.jpg)](https://www.youtube.com/watch?v=4iP_ADT9N3E)
+https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 
 ## Features
 
@@ -23,6 +23,7 @@ Check out this video of Claude Memory in action:
 3. Enable "Developer mode" in the top right corner.
 4. Click "Load unpacked" and select the directory containing the extension files.
 5. The Claude Memory extension should now appear in your Chrome toolbar.
+
 
 ## Usage
 
