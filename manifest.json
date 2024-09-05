@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Memory for Claude",
+    "name": "Claude Memory",
     "version": "1.0",
-    "description": "Make claude remember your past preferences and learn from it",
+    "description": "Claude Memory is a Chrome extension that enhances your interaction with Claude AI by providing memory functionality. It allows you to store and retrieve important information from your conversations with Claude, making your AI interactions more personalized and context-aware.",
     "icons": {
         "16": "icons/icon16.png",
         "48": "icons/icon48.png",

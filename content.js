@@ -43,7 +43,7 @@ async function handleMem0Click() {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${apiKey}`
                 },
-                body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.3, limit: 5 })
+                body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.1, limit: 10 })
             });
 
             // New add memory API call (non-blocking)
@@ -74,17 +74,30 @@ async function handleMem0Click() {
 
             if (inputElement) {
                 const memories = responseData.map(item => item.memory);
-                const memoryText = memories.length > 0
-                    ? memories.map(mem => `- ${mem}`).join('<br>')
-                    : 'No relevant memories found.';
-
+                
                 const memoryWrapper = document.createElement('div');
                 memoryWrapper.style.backgroundColor = '#dcfce7';
                 memoryWrapper.style.padding = '8px';
                 memoryWrapper.style.borderRadius = '4px';
                 memoryWrapper.style.marginTop = '8px';
                 memoryWrapper.style.marginBottom = '8px';
-                memoryWrapper.innerHTML = `<strong>Memories to use:</strong><br>${memoryText}`;
+
+                const titleElement = document.createElement('strong');
+                titleElement.textContent = 'Memories to use:';
+                memoryWrapper.appendChild(titleElement);
+                memoryWrapper.appendChild(document.createElement('br'));
+
+                if (memories.length > 0) {
+                    memories.forEach(mem => {
+                        const memoryItem = document.createElement('div');
+                        memoryItem.textContent = `- ${mem}`;
+                        memoryWrapper.appendChild(memoryItem);
+                    });
+                } else {
+                    const noMemoriesElement = document.createElement('div');
+                    noMemoriesElement.textContent = 'No memories found.';
+                    memoryWrapper.appendChild(noMemoriesElement);
+                }
 
                 const memoryTextWithStyle = memoryWrapper.outerHTML;
 
