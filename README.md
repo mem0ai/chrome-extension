@@ -7,7 +7,7 @@ Claude Memory is a Chrome extension that enhances your interaction with Claude b
 
 Check out this video of Claude Memory in action:
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/4iP_ADT9N3E?si=Z_I1Za10DrlMZGh6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![YouTube](http://i.ytimg.com/vi/4iP_ADT9N3E/hqdefault.jpg)](https://www.youtube.com/watch?v=4iP_ADT9N3E)
 
 ## Features
 
