@@ -30,7 +30,7 @@ https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 ## Usage
 
 1. Click on the Claude Memory icon in your Chrome toolbar to open the popup.
-2. Enter your Mem0 API key and user ID in the settings.
+2. Enter your Mem0 API key, user ID and run ID in the settings.
 3. During conversations with Claude, click the "Mem0" button to retrieve relevant memories and use them in your conversations. This also tries to deduce new memories from your conversation.
 4. Your memories will be displayed, allowing you to reference them in your conversations.
 
@@ -38,6 +38,8 @@ https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 
 - API Key: Required for connecting to the Mem0 API. Obtain this from your Mem0 Dashboard.
 - User ID: Your unique identifier in the Mem0 system. If not provided, it defaults to 'claude-user'.
+- Run ID: An optional identifier for grouping related memories or sessions. If not provided, it defaults to null.
+
 
 ## Troubleshooting
 
@@ -50,7 +52,7 @@ If you encounter any issues:
 
 ## Privacy and Data Security
 
-Claude Memory stores your API key and user ID locally in your browser. Your messages are sent to the Mem0 API for extracting and retrieving memories.
+Claude Memory stores your API key, user ID and run ID locally in your browser. Your messages are sent to the Mem0 API for extracting and retrieving memories.
 
 ## Contributing
 

@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const apiKeyInput = document.getElementById('apiKey');
     const userIdInput = document.getElementById('userId');
+    const runIdInput = document.getElementById('runId');
     const saveButton = document.getElementById('saveButton');
     const openDashboardButton = document.getElementById('openDashboardButton');
 
@@ -10,16 +11,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load saved API key and userId
-    chrome.storage.sync.get(['apiKey', 'userId'], function(data) {
+    chrome.storage.sync.get(['apiKey', 'userId', 'runId'], function(data) {
         if (apiKeyInput && data.apiKey) apiKeyInput.value = data.apiKey;
         if (userIdInput && data.userId) userIdInput.value = data.userId || 'claude-user';
+        if (runIdInput && data.runId) runIdInput.value = data.runId || null;
     });
 
     if (saveButton) {
         saveButton.addEventListener('click', function() {
             const apiKey = apiKeyInput ? apiKeyInput.value : '';
             const userId = userIdInput ? userIdInput.value : 'claude-user';
-            chrome.storage.sync.set({apiKey, userId}, function() {
+            const runId = runIdInput ? runIdInput.value : null;
+            chrome.storage.sync.set({apiKey, userId, runId}, function() {
                 updateStatus('Saved successfully!');
                 setTimeout(() => updateStatus(''), 3000);
             });

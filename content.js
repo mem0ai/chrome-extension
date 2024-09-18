@@ -32,9 +32,10 @@ async function handleMem0Click() {
     }
 
     try {
-        chrome.storage.sync.get(['apiKey', 'userId'], async function(data) {
+        chrome.storage.sync.get(['apiKey', 'userId', 'runId'], async function(data) {
             const apiKey = data.apiKey;
             const userId = data.userId || 'claude-user';
+            const runId = data.runId || null;
 
             // Existing search API call
             const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
@@ -43,7 +44,7 @@ async function handleMem0Click() {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${apiKey}`
                 },
-                body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.1, limit: 10 })
+                body: JSON.stringify({ query: message, user_id: userId, run_id: runId, rerank: true, threshold: 0.1, limit: 10 })
             });
 
             // New add memory API call (non-blocking)
@@ -56,6 +57,7 @@ async function handleMem0Click() {
                 body: JSON.stringify({
                     messages: [{ content: message, role: 'user' }],
                     user_id: userId,
+                    run_id: runId,
                     infer: true
                 })
             }).then(response => {
@@ -74,7 +76,7 @@ async function handleMem0Click() {
 
             if (inputElement) {
                 const memories = responseData.map(item => item.memory);
-                
+
                 const memoryWrapper = document.createElement('div');
                 memoryWrapper.style.backgroundColor = '#dcfce7';
                 memoryWrapper.style.padding = '8px';
