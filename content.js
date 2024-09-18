@@ -74,40 +74,36 @@ async function handleMem0Click() {
 
             if (inputElement) {
                 const memories = responseData.map(item => item.memory);
-                
-                const memoryWrapper = document.createElement('div');
-                memoryWrapper.style.backgroundColor = '#dcfce7';
-                memoryWrapper.style.padding = '8px';
-                memoryWrapper.style.borderRadius = '4px';
-                memoryWrapper.style.marginTop = '8px';
-                memoryWrapper.style.marginBottom = '8px';
-
-                const titleElement = document.createElement('strong');
-                titleElement.textContent = 'Memories to use:';
-                memoryWrapper.appendChild(titleElement);
-                memoryWrapper.appendChild(document.createElement('br'));
 
                 if (memories.length > 0) {
+                    const memoryWrapper = document.createElement('div');
+                    memoryWrapper.style.backgroundColor = '#dcfce7';
+                    memoryWrapper.style.padding = '8px';
+                    memoryWrapper.style.borderRadius = '4px';
+                    memoryWrapper.style.marginTop = '8px';
+                    memoryWrapper.style.marginBottom = '8px';
+
+                    const titleElement = document.createElement('strong');
+                    titleElement.textContent = 'Here is some more information about me:';
+                    memoryWrapper.appendChild(titleElement);
+                    memoryWrapper.appendChild(document.createElement('br'));
+
                     memories.forEach(mem => {
                         const memoryItem = document.createElement('div');
                         memoryItem.textContent = `- ${mem}`;
                         memoryWrapper.appendChild(memoryItem);
                     });
-                } else {
-                    const noMemoriesElement = document.createElement('div');
-                    noMemoriesElement.textContent = 'No memories found.';
-                    memoryWrapper.appendChild(noMemoriesElement);
+
+                    const memoryTextWithStyle = memoryWrapper.outerHTML;
+
+                    if (inputElement.tagName.toLowerCase() === 'div') {
+                        inputElement.innerHTML += '<br><br>' + memoryTextWithStyle;
+                    } else {
+                        inputElement.value += '\n\n' + memoryTextWithStyle;
+                    }
+
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 }
-
-                const memoryTextWithStyle = memoryWrapper.outerHTML;
-
-                if (inputElement.tagName.toLowerCase() === 'div') {
-                    inputElement.innerHTML += '<br><br>' + memoryTextWithStyle;
-                } else {
-                    inputElement.value += '\n\n' + memoryTextWithStyle;
-                }
-
-                inputElement.dispatchEvent(new Event('input', { bubbles: true }));
             } else {
                 console.log('Mem0 response:', responseData || 'No response received');
                 alert('Mem0 response received, but no input field found to update.');

@@ -3,9 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const userIdInput = document.getElementById('userId');
     const saveButton = document.getElementById('saveButton');
     const openDashboardButton = document.getElementById('openDashboardButton');
+    const togglePasswordButton = document.querySelector('.toggle-password');
 
     if (!chrome.storage || !chrome.storage.sync) {
-        updateStatus('Error: Chrome storage API is not available');
+        console.error('Error: Chrome storage API is not available');
         return;
     }
 
@@ -20,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const apiKey = apiKeyInput ? apiKeyInput.value : '';
             const userId = userIdInput ? userIdInput.value : 'claude-user';
             chrome.storage.sync.set({apiKey, userId}, function() {
-                updateStatus('Saved successfully!');
-                setTimeout(() => updateStatus(''), 3000);
+                console.log('Saved successfully!');
+                window.close(); // Close the popup after saving
             });
         });
     } else {
@@ -32,19 +33,32 @@ document.addEventListener('DOMContentLoaded', function() {
         openDashboardButton.addEventListener('click', () => {
             chrome.storage.sync.get(['userId'], function(data) {
                 const userId = data.userId || 'claude-user';
-                chrome.tabs.create({ url: `https://app.mem0.ai/dashboard/user/${userId}` });
+                chrome.tabs.create({ url: `https://app.mem0.ai/dashboard/user/${userId}` }, function() {
+                    window.close(); // Close the popup after opening the dashboard
+                });
             });
         });
     } else {
         console.error('Open dashboard button not found');
     }
-});
 
-function updateStatus(message) {
-    const statusElement = document.getElementById('status');
-    if (statusElement) {
-        statusElement.textContent = message;
+    // Add password toggle functionality
+    if (togglePasswordButton && apiKeyInput) {
+        togglePasswordButton.addEventListener('click', function() {
+            const eyeIcon = this.querySelector('.eye-icon');
+            const eyeOffIcon = this.querySelector('.eye-off-icon');
+
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+            } else {
+                apiKeyInput.type = 'password';
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+            }
+        });
     } else {
-        console.error('Status element not found');
+        console.error('Toggle password button or API key input not found');
     }
-}
+});
