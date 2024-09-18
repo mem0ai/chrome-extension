@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (openDashboardButton) {
         openDashboardButton.addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://app.mem0.ai/dashboard/user/claude-user' });
+            chrome.storage.sync.get(['userId'], function(data) {
+                const userId = data.userId || 'claude-user';
+                chrome.tabs.create({ url: `https://app.mem0.ai/dashboard/user/${userId}` });
+            });
         });
     } else {
         console.error('Open dashboard button not found');
