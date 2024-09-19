@@ -3,23 +3,55 @@ let isProcessingMem0 = false;
 function addMem0Button() {
     const sendButton = document.querySelector('button[aria-label="Send Message"]');
     if (sendButton && !document.querySelector('#mem0-button')) {
-        const mem0Button = document.createElement('button');
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.position = 'relative';
+        buttonContainer.style.display = 'inline-block';
+
+        const mem0Button = document.createElement('img');
         mem0Button.id = 'mem0-button';
-        mem0Button.textContent = 'Mem0';
-        mem0Button.className = sendButton.className;
-        mem0Button.style.marginRight = '5px';
-        mem0Button.style.color = 'white';
-        mem0Button.style.minWidth = '60px';
-        mem0Button.style.padding = '0 10px';
+        mem0Button.src = chrome.runtime.getURL('icons/mem0-claude-icon.png');
+        mem0Button.style.width = '30px';
+        mem0Button.style.height = '30px';
+        mem0Button.style.marginRight = '12px';
+        mem0Button.style.cursor = 'pointer';
         mem0Button.addEventListener('click', handleMem0Click);
 
-        const buttonContainer = document.createElement('div');
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.alignItems = 'center';
+        const tooltip = document.createElement('div');
+        tooltip.textContent = 'Add related memories';
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.backgroundColor = 'black';
+        tooltip.style.color = 'white';
+        tooltip.style.textAlign = 'center';
+        tooltip.style.borderRadius = '6px';
+        tooltip.style.padding = '5px 10px';
+        tooltip.style.position = 'absolute';
+        tooltip.style.zIndex = '1';
+        tooltip.style.bottom = '125%';
+        tooltip.style.left = '50%';
+        tooltip.style.transform = 'translateX(-50%)';
+        tooltip.style.whiteSpace = 'nowrap';
+        tooltip.style.opacity = '0';
+        tooltip.style.transition = 'opacity 0.3s';
 
-        sendButton.parentNode.insertBefore(buttonContainer, sendButton);
+        mem0Button.addEventListener('mouseenter', () => {
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+        });
+        mem0Button.addEventListener('mouseleave', () => {
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = '0';
+        });
+
         buttonContainer.appendChild(mem0Button);
-        buttonContainer.appendChild(sendButton);
+        buttonContainer.appendChild(tooltip);
+
+        const flexContainer = document.createElement('div');
+        flexContainer.style.display = 'flex';
+        flexContainer.style.alignItems = 'center';
+
+        sendButton.parentNode.insertBefore(flexContainer, sendButton);
+        flexContainer.appendChild(buttonContainer);
+        flexContainer.appendChild(sendButton);
     }
 }
 
