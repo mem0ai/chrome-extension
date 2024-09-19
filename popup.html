@@ -5,142 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mem0 Settings</title>
     <style>
-        :root {
-            --background: 0 0% 100%;
-            --foreground: 222.2 84% 4.9%;
-            --card: 0 0% 100%;
-            --card-foreground: 222.2 84% 4.9%;
-            --popover: 0 0% 100%;
-            --popover-foreground: 222.2 84% 4.9%;
-            --primary: 222.2 47.4% 11.2%;
-            --primary-foreground: 210 40% 98%;
-            --secondary: 210 40% 96.1%;
-            --secondary-foreground: 222.2 47.4% 11.2%;
-            --muted: 210 40% 96.1%;
-            --muted-foreground: 215.4 16.3% 46.9%;
-            --accent: 210 40% 96.1%;
-            --accent-foreground: 222.2 47.4% 11.2%;
-            --destructive: 0 84.2% 60.2%;
-            --destructive-foreground: 210 40% 98%;
-            --border: 214.3 31.8% 91.4%;
-            --input: 214.3 31.8% 91.4%;
-            --ring: 222.2 84% 4.9%;
-            --radius: 0.5rem;
-        }
-
         body {
-            background-color: hsl(var(--background));
-            color: hsl(var(--foreground));
-            width: 340px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            width: 420px;
             padding: 1.25rem;
             margin: 0;
+            background-color: #ffffff;
+            color: #333333;
         }
 
         .container {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0 0 0.5rem;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.375rem;
-        }
-
-        label {
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        input {
-            padding: 0.5rem;
-            border-radius: var(--radius);
-            border: 1px solid hsl(var(--input));
-            background-color: transparent;
-            color: hsl(var(--foreground));
-            font-size: 0.875rem;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        input:focus {
-            border-color: hsl(var(--ring));
-            box-shadow: 0 0 0 2px hsla(var(--ring), 0.3);
-        }
-
-        button {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: var(--radius);
-            border: none;
-            background-color: #000000;
-            color: #ffffff;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button:hover {
-            background-color: #333333;
-        }
-
-        #status {
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            color: hsl(var(--muted-foreground));
+            gap: 1rem;
         }
 
         .logo {
             width: 140px;
             height: auto;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e0e0e0;
+        font-size: 0.875rem; /* Reduced from 1rem to 0.875rem */
+        width: 100%;
+        box-sizing: border-box;
+        }
+
+        button {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        }
+
+        #saveButton {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        #saveButton:hover {
+            background-color: #333333;
+            transform: translateY(-1px);
+        }
+
+        #openDashboardButton {
+            background-color: #ffffff;
+            color: #333333;
+            border: 1px solid #e0e0e0;
+        }
+
+        #openDashboardButton:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-1px);
         }
 
         .instructions {
-            font-size: 0.8125rem;
-            color: hsl(var(--muted-foreground));
-            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: #666666;
         }
 
         .instructions a {
-            color: hsl(var(--primary));
+            color: #333333;
             text-decoration: none;
         }
 
         .instructions a:hover {
             text-decoration: underline;
         }
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            color: #808080;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .toggle-password svg {
+            width: 20px;
+            height: 20px;
+            color: #808080;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://app.mem0.ai/images/light.svg" alt="Mem0 Logo" class="logo" width="100px">
-        <h2>Mem0 Settings</h2>
+        <img src="https://app.mem0.ai/images/light.svg" alt="Mem0 Logo" class="logo">
+        <div class="input-group">
+            <label for="apiKey">
+                API Key
+                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.5 7.5L19 4M21 2L19 4L21 2ZM11.39 11.61C11.9064 12.1195 12.3168 12.726 12.5978 13.3948C12.8787 14.0635 13.0246 14.7813 13.0271 15.5066C13.0295 16.232 12.8884 16.9507 12.6119 17.6213C12.3355 18.2919 11.9291 18.9012 11.4162 19.4141C10.9033 19.9271 10.294 20.3334 9.62333 20.6099C8.95271 20.8864 8.23403 21.0275 7.50866 21.025C6.78329 21.0226 6.06555 20.8767 5.39679 20.5957C4.72803 20.3148 4.12154 19.9043 3.61203 19.388C2.61016 18.3507 2.05579 16.9614 2.06832 15.5193C2.08085 14.0772 2.65928 12.6977 3.67903 11.678C4.69877 10.6583 6.07824 10.0798 7.52032 10.0673C8.96241 10.0548 10.3517 10.6091 11.389 11.611L11.39 11.61ZM11.39 11.61L15.5 7.5L11.39 11.61ZM15.5 7.5L18.5 10.5L22 7L19 4L15.5 7.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </label>
+            <div class="input-wrapper">
+                <input type="password" id="apiKey" placeholder="Enter your API key">
+                <button type="button" class="toggle-password" aria-label="Toggle API key visibility">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eye-icon">
+                        <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="eye-off-icon" style="display: none;">
+                        <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68192 3.96914 7.65663 6.06 6.06M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2048 20.84 15.19M14.12 14.12C13.8454 14.4148 13.5141 14.6512 13.1462 14.8151C12.7782 14.9791 12.3809 15.0673 11.9781 15.0744C11.5753 15.0815 11.1752 15.0074 10.8016 14.8565C10.4281 14.7056 10.0887 14.4811 9.80385 14.1962C9.51897 13.9113 9.29439 13.572 9.14351 13.1984C8.99262 12.8249 8.91853 12.4247 8.92563 12.0219C8.93274 11.6191 9.02091 11.2219 9.18488 10.8539C9.34884 10.4859 9.58525 10.1547 9.88 9.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M1 1L23 23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="input-group">
+            <label for="userId">
+                User ID
+                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </label>
+            <input type="text" id="userId" placeholder="Enter your User ID">
+        </div>
         <p class="instructions">
-            Don't have an API key? Get one from your 
-            <a href="https://app.mem0.ai/dashboard/api-keys" target="_blank" rel="noopener noreferrer">Mem0 Dashboard</a>.
+            Don't have an API key?
+            <a href="https://mem0.dev/platform-ce" target="_blank" rel="noopener noreferrer">Get one from your Mem0 Dashboard</a>
         </p>
-        <div class="input-group">
-            <label for="apiKey">API Key</label>
-            <input type="password" id="apiKey" placeholder="Enter your API key">
-        </div>
-        <div class="input-group">
-            <label for="userId">User ID</label>
-            <input type="text" id="userId" placeholder="Enter your user ID">
-        </div>
-        <button id="saveButton">Save</button>
+        <button id="saveButton">Save Settings</button>
         <button id="openDashboardButton">View Memories</button>
-        <p id="status"></p>
     </div>
-    <ul id="memoriesList"></ul>
     <script src="popup.js"></script>
 </body>
 </html>
