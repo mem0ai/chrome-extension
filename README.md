@@ -1,6 +1,13 @@
 # Claude Memory
 
-Claude Memory is a Chrome extension that enhances your interaction with Claude by providing memory functionality. It allows you to store and retrieve important information from your conversations with Claude such as your preferences, making your interactions more personalized and context-aware. Install it from [Chrome Web Store](https://chromewebstore.google.com/detail/claude-memory/onihkkbipkfeijkadecaafbgagkhglop?hl=en-GB&utm_source=ext_sidebar).
+Claude Memory is a Chrome extension that enhances your interaction with Claude by providing memory functionality. It allows you to store and retrieve important information from your conversations with Claude such as your preferences, making your interactions more personalized and context-aware.
+
+<a href="https://chromewebstore.google.com/detail/claude-memory/onihkkbipkfeijkadecaafbgagkhglop?hl=en-GB&utm_source=ext_sidebar" style="display: inline-block; padding: 8px 12px; background-color: white; color: #3c4043; text-decoration: none; font-family: 'Roboto', Arial, sans-serif; font-size: 14px; font-weight: 500; border-radius: 4px; border: 1px solid #dadce0; box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);">
+  <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome logo" style="height: 24px; vertical-align: middle; margin-right: 8px;">
+  Add to Chrome, It's Free
+</a>
+<br>
+<br>
 
 Built using [Mem0](https://www.mem0.ai) ❤️
 
