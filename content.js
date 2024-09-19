@@ -10,11 +10,26 @@ function addMem0Button() {
         const mem0Button = document.createElement('img');
         mem0Button.id = 'mem0-button';
         mem0Button.src = chrome.runtime.getURL('icons/mem0-claude-icon.png');
-        mem0Button.style.width = '30px';
-        mem0Button.style.height = '30px';
-        mem0Button.style.marginRight = '12px';
+        mem0Button.style.width = '32px';
+        mem0Button.style.height = '32px';
+        mem0Button.style.marginRight = '22px';
         mem0Button.style.cursor = 'pointer';
+        mem0Button.style.padding = '8px';
+        mem0Button.style.borderRadius = '5px';
+        mem0Button.style.transition = 'background-color 0.3s ease';
+        mem0Button.style.boxSizing = 'border-box';
         mem0Button.addEventListener('click', handleMem0Click);
+
+        mem0Button.addEventListener('mouseenter', () => {
+            mem0Button.style.backgroundColor = 'rgba(0, 0, 0, 0.35)';
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+        });
+        mem0Button.addEventListener('mouseleave', () => {
+            mem0Button.style.backgroundColor = 'transparent';
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = '0';
+        });
 
         const tooltip = document.createElement('div');
         tooltip.textContent = 'Add related memories';
@@ -22,16 +37,17 @@ function addMem0Button() {
         tooltip.style.backgroundColor = 'black';
         tooltip.style.color = 'white';
         tooltip.style.textAlign = 'center';
-        tooltip.style.borderRadius = '6px';
-        tooltip.style.padding = '5px 10px';
+        tooltip.style.borderRadius = '4px';
+        tooltip.style.padding = '3px 6px';
         tooltip.style.position = 'absolute';
         tooltip.style.zIndex = '1';
-        tooltip.style.bottom = '125%';
+        tooltip.style.top = 'calc(100% + 11px)';
         tooltip.style.left = '50%';
         tooltip.style.transform = 'translateX(-50%)';
         tooltip.style.whiteSpace = 'nowrap';
         tooltip.style.opacity = '0';
         tooltip.style.transition = 'opacity 0.3s';
+        tooltip.style.fontSize = '12px';
 
         mem0Button.addEventListener('mouseenter', () => {
             tooltip.style.visibility = 'visible';
@@ -108,7 +124,17 @@ async function handleMem0Click() {
                 const memories = responseData.map(item => item.memory);
 
                 if (memories.length > 0) {
+                    let currentContent = inputElement.tagName.toLowerCase() === 'div' ? inputElement.innerHTML : inputElement.value;
+
+                    const memInfoRegex = /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+                    currentContent = currentContent.replace(memInfoRegex, '').trim();
+                    if (currentContent.slice(-3) === '<p>') {
+                        currentContent = currentContent.slice(0, -3);
+                    }
+                    console.log(currentContent);
+
                     const memoryWrapper = document.createElement('div');
+                    memoryWrapper.id = "mem0-wrapper";
                     memoryWrapper.style.backgroundColor = '#dcfce7';
                     memoryWrapper.style.padding = '8px';
                     memoryWrapper.style.borderRadius = '4px';
@@ -129,9 +155,9 @@ async function handleMem0Click() {
                     const memoryTextWithStyle = memoryWrapper.outerHTML;
 
                     if (inputElement.tagName.toLowerCase() === 'div') {
-                        inputElement.innerHTML += '<br><br>' + memoryTextWithStyle;
+                        inputElement.innerHTML = currentContent + '<br><br>' + memoryTextWithStyle;
                     } else {
-                        inputElement.value += '\n\n' + memoryTextWithStyle;
+                        inputElement.value = currentContent + '\n\n' + memoryTextWithStyle;
                     }
 
                     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
