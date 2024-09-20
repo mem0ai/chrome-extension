@@ -184,6 +184,15 @@ async function handleMem0Click(popup) {
 
                 if (memories.length > 0) {
                     // Prepare the memories content
+                    let currentContent = inputElement.tagName.toLowerCase() === 'div' ? inputElement.innerHTML : inputElement.value;
+
+                    const memInfoRegex = /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+                    currentContent = currentContent.replace(memInfoRegex, '').trim();
+                    const endIndex = currentContent.indexOf('</p>');
+                    if (endIndex !== -1) {
+                        currentContent = currentContent.slice(0, endIndex+4);
+                    }
+
                     let memoriesContent = '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
                     memoriesContent += '<strong>Here is some more information about me:</strong>';
                     memories.forEach(mem => {
@@ -194,27 +203,10 @@ async function handleMem0Click(popup) {
                     // Insert the memories into the input field
                     if (inputElement.tagName.toLowerCase() === 'div') {
                         // For contenteditable div
-                        let range = document.createRange();
-                        let sel = window.getSelection();
-                        range.selectNodeContents(inputElement);
-                        range.collapse(false); // Move cursor to the end
-                        let tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = `<div><br></div>${memoriesContent}`;
-                        let frag = document.createDocumentFragment(), node, lastNode;
-                        while ((node = tempDiv.firstChild)) {
-                            lastNode = frag.appendChild(node);
-                        }
-                        range.insertNode(frag);
-                        // Move the cursor after the inserted content
-                        if (lastNode) {
-                            range.setStartAfter(lastNode);
-                            range.collapse(true);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
+                        inputElement.innerHTML = `${currentContent}<div><br></div>${memoriesContent}`;
                     } else {
                         // For textarea
-                        inputElement.value += `\n${memoriesContent}`;
+                        inputElement.value = `${currentContent}\n${memoriesContent}`;
                     }
                     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
@@ -226,7 +218,6 @@ async function handleMem0Click(popup) {
         });
     } catch (error) {
         console.error('Error:', error);
-        showPopup(popup, 'Failed to send message to Mem0');
     } finally {
         isProcessingMem0 = false;
     }
