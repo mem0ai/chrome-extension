@@ -30,6 +30,10 @@
         {
             "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
             "js": ["chatgpt/content.js"]
+        },
+        {
+            "matches": ["https://www.perplexity.ai/*"],
+            "js": ["perplexity/content.js"]
         }
     ],
     "web_accessible_resources": [
