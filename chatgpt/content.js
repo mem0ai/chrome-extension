@@ -1,30 +1,33 @@
 let isProcessingMem0 = false;
 
+// Initialize the MutationObserver variable
+let observer;
+
+function createPopup(container) {
+    const popup = document.createElement('div');
+    popup.className = 'mem0-popup';
+    popup.style.cssText = `
+        display: none;
+        position: absolute;
+        background-color: black;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 10000;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 11px;
+        white-space: nowrap;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    `;
+    container.appendChild(popup);
+    return popup;
+}
+
 function addMem0Button() {
     const sendButton = document.querySelector('button[aria-label="Send prompt"]');
-
-    function createPopup(container) {
-        const popup = document.createElement('div');
-        popup.className = 'mem0-popup';
-        popup.style.cssText = `
-            display: none;
-            position: absolute;
-            background-color: black;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            z-index: 10000;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-bottom: 11px;
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        `;
-        container.appendChild(popup);
-        return popup;
-    }
 
     if (sendButton && !document.querySelector('#mem0-button')) {
         const sendButtonContainer = sendButton.parentElement;
@@ -236,15 +239,174 @@ function getInputValue() {
     return inputElement ? (inputElement.textContent || inputElement.value) : null;
 }
 
+function addSyncButton() {
+    const buttonContainer = document.querySelector('div.mt-5.flex.justify-end');
+    if (buttonContainer) {
+        console.log("Creating");
+        let syncButton = document.querySelector('#sync-button');
+        console.log(syncButton);
+
+        // If the syncButton does not exist, create it
+        if (!syncButton) {
+            syncButton = document.createElement('button');
+            syncButton.id = 'sync-button';
+            syncButton.className = 'btn relative btn-neutral mr-2';
+            syncButton.innerHTML = '<div class="flex items-center justify-center text-white">Sync memories</div>';
+            syncButton.style.border = '1px solid white'; // Add white border
+
+            const syncIcon = document.createElement('img');
+            syncIcon.src = chrome.runtime.getURL('icons/sync-icon.png');
+            syncIcon.style.width = '16px';
+            syncIcon.style.height = '16px';
+            syncIcon.style.marginRight = '8px';
+
+            syncButton.prepend(syncIcon);
+
+            syncButton.addEventListener('click', handleSyncClick);
+
+            syncButton.addEventListener('mouseenter', () => {
+                syncButton.style.filter = 'brightness(90%)';
+            });
+            syncButton.addEventListener('mouseleave', () => {
+                syncButton.style.filter = 'none';
+            });
+        }
+
+        console.log(buttonContainer);
+
+        if (!buttonContainer.contains(syncButton)) {
+            console.log("Inserting");
+            buttonContainer.insertBefore(syncButton, buttonContainer.firstChild);
+        }
+
+        // Optionally, handle the disabled state
+        function updateSyncButtonState() {
+            // Define when the sync button should be enabled or disabled
+            syncButton.disabled = false; // For example, always enabled
+            // Update opacity or pointer events if needed
+            if (syncButton.disabled) {
+                syncButton.style.opacity = '0.5';
+                syncButton.style.pointerEvents = 'none';
+            } else {
+                syncButton.style.opacity = '1';
+                syncButton.style.pointerEvents = 'auto';
+            }
+        }
+
+        updateSyncButtonState();
+    } else {
+        // If resetMemoriesButton or specificTable is not found, remove syncButton from DOM
+        const existingSyncButton = document.querySelector('#sync-button');
+        if (existingSyncButton && existingSyncButton.parentNode) {
+            existingSyncButton.parentNode.removeChild(existingSyncButton);
+        }
+    }
+}
+
+function handleSyncClick() {
+    console.log('Sync button clicked!');
+    const table = document.querySelector('table.w-full.border-separate.border-spacing-0');
+    const syncButton = document.querySelector('#sync-button');
+
+    if (table && syncButton) {
+        const rows = table.querySelectorAll('tbody tr');
+        let syncedCount = 0;
+        let totalCount = rows.length;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 1) {
+                const memory = {
+                    content: cells[0].querySelector('div.whitespace-pre-wrap').textContent.trim(),
+                    timestamp: new Date().toISOString()
+                };
+
+                sendMemoryToMem0(memory)
+                    .then(() => {
+                        syncedCount++;
+                        if (syncedCount === totalCount) {
+                            showSyncPopup(syncButton, `${syncedCount} memories synced`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error syncing memory:', error);
+                        if (syncedCount === totalCount) {
+                            showSyncPopup(syncButton, `${syncedCount}/${totalCount} memories synced`);
+                        }
+                    });
+            }
+        });
+    } else {
+        console.error('Table or Sync button not found');
+    }
+}
+
+function showSyncPopup(button, message) {
+    const popup = document.createElement('div');
+    popup.textContent = message;
+    popup.style.cssText = `
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: black;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 1000;
+    `;
+    
+    button.style.position = 'relative';
+    button.appendChild(popup);
+
+    setTimeout(() => {
+        popup.remove();
+    }, 1000);
+}
+
+function sendMemoryToMem0(memory) {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get(['apiKey', 'userId'], function(items) {
+            if (items.apiKey && items.userId) {
+                fetch('https://api.mem0.ai/v1/memories/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${items.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        messages: [{ content: memory.content, role: 'user' }],
+                        user_id: items.userId,
+                        infer: true
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        reject(`Failed to add memory: ${response.status}`);
+                    } else {
+                        console.log('Memory sent to Mem0 successfully');
+                        resolve();
+                    }
+                })
+                .catch(error => reject(`Error sending memory to Mem0: ${error}`));
+            } else {
+                reject('API Key or User ID not set');
+            }
+        });
+    });
+}
+
 function initializeMem0Integration() {
     document.addEventListener('DOMContentLoaded', () => {
         addMem0Button();
+        addSyncButton();
     });
 
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach(() => {
-            addMem0Button();
-        });
+    observer = new MutationObserver(() => {
+        addMem0Button();
+        addSyncButton();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
