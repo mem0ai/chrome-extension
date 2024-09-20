@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Claude Memory",
-    "version": "1.1",
+    "version": "1.2",
     "description": "Long-term memory for Claude AI. Personalize Claude's responses with information from your past interactions.",
     "icons": {
         "16": "icons/icon16.png",
