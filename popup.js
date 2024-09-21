@@ -13,13 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load saved API key and userId
     chrome.storage.sync.get(['apiKey', 'userId'], function(data) {
         if (apiKeyInput && data.apiKey) apiKeyInput.value = data.apiKey;
-        if (userIdInput && data.userId) userIdInput.value = data.userId || 'claude-user';
+        if (userIdInput && data.userId) userIdInput.value = data.userId || 'chrome-extension-user';
     });
 
     if (saveButton) {
         saveButton.addEventListener('click', function() {
             const apiKey = apiKeyInput ? apiKeyInput.value : '';
-            const userId = userIdInput ? userIdInput.value : 'claude-user';
+            const userId = userIdInput ? userIdInput.value : 'chrome-extension-user';
             chrome.storage.sync.set({apiKey, userId}, function() {
                 console.log('Saved successfully!');
                 window.close(); // Close the popup after saving
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (openDashboardButton) {
         openDashboardButton.addEventListener('click', () => {
             chrome.storage.sync.get(['userId'], function(data) {
-                const userId = data.userId || 'claude-user';
+                const userId = data.userId || 'chrome-extension-user';
                 chrome.tabs.create({ url: `https://app.mem0.ai/dashboard/user/${userId}` }, function() {
                     window.close(); // Close the popup after opening the dashboard
                 });
