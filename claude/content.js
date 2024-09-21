@@ -146,11 +146,18 @@ function addMem0Button() {
 
 async function handleMem0Click(popup) {
     const inputElement = document.querySelector('div[contenteditable="true"]') || document.querySelector('textarea');
-    const message = getInputValue();
+    let message = getInputValue();
     if (!message) {
         console.error('No input message found');
         showPopup(popup, 'No input message found');
         return;
+    }
+
+    const memInfoRegex = /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+    message = message.replace(memInfoRegex, '').trim();
+    const endIndex = message.indexOf('</p>');
+    if (endIndex !== -1) {
+        message = message.slice(0, endIndex+4);
     }
 
     if (isProcessingMem0) {
@@ -170,6 +177,9 @@ async function handleMem0Click(popup) {
                 return;
             }
 
+            const messages = getLastMessages(2);
+            messages.push({ role: "user", content: message });
+
             // Existing search API call
             const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
                 method: 'POST',
@@ -188,7 +198,7 @@ async function handleMem0Click(popup) {
                     'Authorization': `Token ${apiKey}`
                 },
                 body: JSON.stringify({
-                    messages: [{ content: message, role: 'user' }],
+                    messages: messages,
                     user_id: userId,
                     infer: true
                 })
@@ -260,6 +270,32 @@ async function handleMem0Click(popup) {
         isProcessingMem0 = false;
     }
 }
+
+function getLastMessages(count) {
+    const messageContainer = document.querySelector('.flex-1.flex.flex-col.gap-3.px-4.max-w-3xl.mx-auto.w-full');
+    if (!messageContainer) return [];
+
+    const messageElements = Array.from(messageContainer.children).reverse();
+    const messages = [];
+
+    for (const element of messageElements) {
+        if (messages.length >= count) break;
+
+        const userElement = element.querySelector('.font-user-message');
+        const assistantElement = element.querySelector('.font-claude-message');
+
+        if (userElement) {
+            const content = userElement.textContent.trim();
+            messages.unshift({ role: "user", content });
+        } else if (assistantElement) {
+            const content = assistantElement.textContent.trim();
+            messages.unshift({ role: "assistant", content });
+        }
+    }
+
+    return messages;
+}
+
 
 function showPopup(popup, message) {
     popup.textContent = message;
