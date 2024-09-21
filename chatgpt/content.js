@@ -146,7 +146,7 @@ async function handleMem0Click(popup) {
     try {
         chrome.storage.sync.get(['apiKey', 'userId'], async function(data) {
             const apiKey = data.apiKey;
-            const userId = data.userId || 'chatgpt-user';
+            const userId = data.userId || 'chrome-extension-user';
 
             if (!apiKey) {
                 showPopup(popup, 'No API Key found');

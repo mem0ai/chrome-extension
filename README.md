@@ -44,7 +44,7 @@ https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 ## Configuration
 
 - API Key: Required for connecting to the Mem0 API. Obtain this from your Mem0 Dashboard.
-- User ID: Your unique identifier in the Mem0 system. If not provided, it defaults to 'claude-user'.
+- User ID: Your unique identifier in the Mem0 system. If not provided, it defaults to 'chrome-extension-user'.
 
 ## Troubleshooting
 

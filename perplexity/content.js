@@ -1,7 +1,13 @@
 let isProcessingMem0 = false;
 
 function addMem0Button() {
-    const targetDiv = document.querySelector('.bg-background.dark\\:bg-offsetDark.flex.items-center.space-x-2.justify-self-end.rounded-full.col-start-3.row-start-2.-mr-2');
+    const submitButton = document.querySelector('button[aria-label="Submit"]');
+    if (!submitButton) {
+        setTimeout(addMem0Button, 500);
+        return;
+    }
+
+    const targetDiv = submitButton.parentElement;
 
     if (targetDiv && !document.querySelector('#mem0-button-container')) {
         // Create a new container for the mem0 button
@@ -10,7 +16,7 @@ function addMem0Button() {
         mem0ButtonContainer.style.cssText = `
             display: inline-flex;
             align-items: center;
-            margin-right: 2px;
+            margin-right: ${window.location.href.startsWith('https://www.perplexity.ai/search') ? '19px' : '0px'};
             position: relative;
         `;
 
@@ -22,8 +28,8 @@ function addMem0Button() {
             width: 22px;
             height: 22px;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 5px;
+            padding: 11px;
+            border-radius: 9px;
             transition: filter 0.3s ease, opacity 0.3s ease;
             box-sizing: content-box;
         `;
@@ -135,19 +141,7 @@ function hideTooltip(tooltip) {
 
 async function handleMem0Click(defaultTooltip, messageTooltip) {
     const inputElement = document.querySelector('div[contenteditable="true"]') || document.querySelector('textarea');
-    let message = getInputValue();
-    if (!message) {
-        console.error('No input message found');
-        showPopup(popup, 'No input message found');
-        return;
-    }
-
-    const memInfoRegex = /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
-    message = message.replace(memInfoRegex, '').trim();
-    const endIndex = message.indexOf('</p>');
-    if (endIndex !== -1) {
-        message = message.slice(0, endIndex+4);
-    }
+    const message = getInputValue();
 
     if (isProcessingMem0) {
         return;
@@ -229,13 +223,6 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
                     }
                     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
-                    if (inputElement.tagName.toLowerCase() === 'div') {
-                        inputElement.innerHTML = message;
-                    } else {
-                        // For textarea
-                        inputElement.value = message;
-                    }
-                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                     showTooltip(messageTooltip, 'No memories found');
                 }
             }
