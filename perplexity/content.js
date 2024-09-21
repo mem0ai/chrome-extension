@@ -135,7 +135,19 @@ function hideTooltip(tooltip) {
 
 async function handleMem0Click(defaultTooltip, messageTooltip) {
     const inputElement = document.querySelector('div[contenteditable="true"]') || document.querySelector('textarea');
-    const message = getInputValue();
+    let message = getInputValue();
+    if (!message) {
+        console.error('No input message found');
+        showPopup(popup, 'No input message found');
+        return;
+    }
+
+    const memInfoRegex = /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+    message = message.replace(memInfoRegex, '').trim();
+    const endIndex = message.indexOf('</p>');
+    if (endIndex !== -1) {
+        message = message.slice(0, endIndex+4);
+    }
 
     if (isProcessingMem0) {
         return;
@@ -217,6 +229,13 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
                     }
                     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
+                    if (inputElement.tagName.toLowerCase() === 'div') {
+                        inputElement.innerHTML = message;
+                    } else {
+                        // For textarea
+                        inputElement.value = message;
+                    }
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                     showTooltip(messageTooltip, 'No memories found');
                 }
             }

@@ -122,12 +122,20 @@ function addMem0Button() {
 
 async function handleMem0Click(popup) {
     const inputElement = document.querySelector('div[contenteditable="true"]') || document.querySelector('textarea');
-    const message = getInputValue();
+    let message = getInputValue();
     if (!message) {
         console.error('No input message found');
         showPopup(popup, 'No input message found');
         return;
     }
+
+    const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
+    message = message.replace(memInfoRegex, '').trim();
+    const endIndex = message.indexOf('</p>');
+    if (endIndex !== -1) {
+        message = message.slice(0, endIndex+4);
+    }
+    console.log(endIndex);
 
     if (isProcessingMem0) {
         return;
@@ -138,13 +146,16 @@ async function handleMem0Click(popup) {
     try {
         chrome.storage.sync.get(['apiKey', 'userId'], async function(data) {
             const apiKey = data.apiKey;
-            const userId = data.userId || 'claude-user';
+            const userId = data.userId || 'chatgpt-user';
 
             if (!apiKey) {
                 showPopup(popup, 'No API Key found');
                 isProcessingMem0 = false;
                 return;
             }
+
+            const messages = getLastMessages(2);
+            messages.push({ role: "user", content: message });
 
             // Existing search API call
             const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
@@ -156,7 +167,6 @@ async function handleMem0Click(popup) {
                 body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.1, limit: 10 })
             });
 
-            // New add memory API call (non-blocking)
             fetch('https://api.mem0.ai/v1/memories/', {
                 method: 'POST',
                 headers: {
@@ -164,7 +174,7 @@ async function handleMem0Click(popup) {
                     'Authorization': `Token ${apiKey}`
                 },
                 body: JSON.stringify({
-                    messages: [{ content: message, role: 'user' }],
+                    messages: messages,
                     user_id: userId,
                     infer: true
                 })
@@ -181,6 +191,9 @@ async function handleMem0Click(popup) {
             }
 
             const responseData = await searchResponse.json();
+            console.log(message);
+            console.log(responseData);
+            console.log(messages);
 
             if (inputElement) {
                 const memories = responseData.map(item => item.memory);
@@ -213,6 +226,13 @@ async function handleMem0Click(popup) {
                     }
                     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
+                    if (inputElement.tagName.toLowerCase() === 'div') {
+                        inputElement.innerHTML = message;
+                    } else {
+                        // For textarea
+                        inputElement.value = message;
+                    }
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                     showPopup(popup, 'No memories found');
                 }
             } else {
@@ -224,6 +244,31 @@ async function handleMem0Click(popup) {
     } finally {
         isProcessingMem0 = false;
     }
+}
+
+function getLastMessages(count) {
+    const messageContainer = document.querySelector('.flex.flex-col.text-sm.md\\:pb-9');
+    if (!messageContainer) return [];
+
+    const messageElements = Array.from(messageContainer.children).reverse();
+    const messages = [];
+
+    for (const element of messageElements) {
+        if (messages.length >= count) break;
+
+        const userElement = element.querySelector('[data-message-author-role="user"]');
+        const assistantElement = element.querySelector('[data-message-author-role="assistant"]');
+
+        if (userElement) {
+            const content = userElement.querySelector('.whitespace-pre-wrap').textContent.trim();
+            messages.unshift({ role: "user", content });
+        } else if (assistantElement) {
+            const content = assistantElement.querySelector('.markdown').textContent.trim();
+            messages.unshift({ role: "assistant", content });
+        }
+    }
+
+    return messages;
 }
 
 function showPopup(popup, message) {

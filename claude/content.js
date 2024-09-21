@@ -257,6 +257,13 @@ async function handleMem0Click(popup) {
 
                     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
+                    if (inputElement.tagName.toLowerCase() === 'div') {
+                        inputElement.innerHTML = message;
+                    } else {
+                        // For textarea
+                        inputElement.value = message;
+                    }
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                     showPopup(popup, 'No memories found');
                 }
             } else {
