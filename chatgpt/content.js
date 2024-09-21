@@ -191,9 +191,6 @@ async function handleMem0Click(popup) {
             }
 
             const responseData = await searchResponse.json();
-            console.log(message);
-            console.log(responseData);
-            console.log(messages);
 
             if (inputElement) {
                 const memories = responseData.map(item => item.memory);
