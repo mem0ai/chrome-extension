@@ -141,7 +141,19 @@ function hideTooltip(tooltip) {
 
 async function handleMem0Click(defaultTooltip, messageTooltip) {
     const inputElement = document.querySelector('div[contenteditable="true"]') || document.querySelector('textarea');
-    const message = getInputValue();
+    let message = getInputValue();
+    if (!message) {
+        console.error('No input message found');
+        showPopup(popup, 'No input message found');
+        return;
+    }
+
+    const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
+    message = message.replace(memInfoRegex, '').trim();
+    const endIndex = message.indexOf('</p>');
+    if (endIndex !== -1) {
+        message = message.slice(0, endIndex+4);
+    }
 
     if (isProcessingMem0) {
         return;
@@ -162,6 +174,9 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
                 return;
             }
 
+            const messages = getLastMessages(2);
+            messages.push({ role: "user", content: message });
+
             // Existing search API call
             const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
                 method: 'POST',
@@ -180,7 +195,7 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
                     'Authorization': `Token ${apiKey}`
                 },
                 body: JSON.stringify({
-                    messages: [{ content: message, role: 'user' }],
+                    messages: messages,
                     user_id: userId,
                     infer: true
                 })
@@ -233,6 +248,33 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
     } finally {
         isProcessingMem0 = false;
     }
+}
+
+function getLastMessages(count) {
+    const messages = [];
+
+    const questionElements = Array.from(document.querySelectorAll('.my-md.md\\:my-lg')).reverse();
+    const answerElements = Array.from(document.querySelectorAll('.mb-md')).reverse();
+
+    const combinedElements = [];
+    for (let i = 0; i < Math.max(questionElements.length, answerElements.length); i++) {
+        if (i < questionElements.length) combinedElements.push(questionElements[i]);
+        if (i < answerElements.length) combinedElements.push(answerElements[i]);
+    }
+
+    for (const element of combinedElements) {
+        if (messages.length >= count) break;
+
+        if (element.classList.contains('my-md')) {
+            const content = element.textContent.trim();
+            messages.push({ role: "user", content });
+        } else if (element.classList.contains('mb-md')) {
+            const content = element.textContent.trim();
+            messages.push({ role: "assistant", content });
+        }
+    }
+
+    return messages;
 }
 
 function getInputValue() {

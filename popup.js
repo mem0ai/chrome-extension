@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const apiKey = apiKeyInput ? apiKeyInput.value : '';
             const userId = userIdInput ? userIdInput.value : 'chrome-extension-user';
             chrome.storage.sync.set({apiKey, userId}, function() {
-                console.log('Saved successfully!');
                 window.close(); // Close the popup after saving
             });
         });

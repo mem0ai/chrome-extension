@@ -135,7 +135,6 @@ async function handleMem0Click(popup) {
     if (endIndex !== -1) {
         message = message.slice(0, endIndex+4);
     }
-    console.log(endIndex);
 
     if (isProcessingMem0) {
         return;
@@ -284,9 +283,7 @@ function getInputValue() {
 function addSyncButton() {
     const buttonContainer = document.querySelector('div.mt-5.flex.justify-end');
     if (buttonContainer) {
-        console.log("Creating");
         let syncButton = document.querySelector('#sync-button');
-        console.log(syncButton);
 
         // If the syncButton does not exist, create it
         if (!syncButton) {
@@ -314,10 +311,7 @@ function addSyncButton() {
             });
         }
 
-        console.log(buttonContainer);
-
         if (!buttonContainer.contains(syncButton)) {
-            console.log("Inserting");
             buttonContainer.insertBefore(syncButton, buttonContainer.firstChild);
         }
 
@@ -346,7 +340,6 @@ function addSyncButton() {
 }
 
 function handleSyncClick() {
-    console.log('Sync button clicked!');
     const table = document.querySelector('table.w-full.border-separate.border-spacing-0');
     const syncButton = document.querySelector('#sync-button');
 
@@ -428,7 +421,6 @@ function sendMemoryToMem0(memory) {
                     if (!response.ok) {
                         reject(`Failed to add memory: ${response.status}`);
                     } else {
-                        console.log('Memory sent to Mem0 successfully');
                         resolve();
                     }
                 })
