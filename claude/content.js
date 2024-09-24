@@ -320,6 +320,18 @@ function getInputValue() {
 function initializeMem0Integration() {
     addMem0Button();
 
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'm') {
+            event.preventDefault();
+            const popup = document.querySelector('.mem0-popup');
+            if (popup) {
+                handleMem0Click(popup);
+            } else {
+                console.error('Mem0 popup not found');
+            }
+        }
+    });
+
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'childList') {

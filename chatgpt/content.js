@@ -438,6 +438,18 @@ function initializeMem0Integration() {
         addSyncButton();
     });
 
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'm') {
+            event.preventDefault();
+            const popup = document.querySelector('.mem0-popup');
+            if (popup) {
+                handleMem0Click(popup);
+            } else {
+                console.error('Mem0 popup not found');
+            }
+        }
+    });
+
     observer = new MutationObserver(() => {
         addMem0Button();
         addSyncButton();
