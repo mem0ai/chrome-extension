@@ -287,6 +287,17 @@ function initializeMem0Integration() {
         addMem0Button();
     });
 
+    document.addEventListener('keydown', (event) => {
+        console.log("clicked");
+        if (event.ctrlKey && event.key === 'm') {
+            console.log("desired");
+            event.preventDefault();
+            const defaultTooltip = document.querySelector('#mem0-button-container > div:nth-child(2)');
+            const messageTooltip = document.querySelector('#mem0-button-container > div:nth-child(3)');
+            handleMem0Click(defaultTooltip, messageTooltip);
+        }
+    });
+
     const observer = new MutationObserver((mutations) => {
         mutations.forEach(() => {
             addMem0Button();
