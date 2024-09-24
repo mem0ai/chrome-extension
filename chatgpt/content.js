@@ -555,7 +555,7 @@ function initializeMem0Integration() {
     addMem0Button();
     addSyncButton();
   });
-
+  
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
@@ -572,7 +572,7 @@ function initializeMem0Integration() {
     addMem0Button();
     addSyncButton();
   });
-
+  
   observer.observe(document.body, { childList: true, subtree: true });
 }
 

@@ -396,7 +396,7 @@ function getInputValue() {
 
 function initializeMem0Integration() {
   addMem0Button();
-
+  
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
@@ -416,7 +416,7 @@ function initializeMem0Integration() {
       }
     });
   });
-
+  
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
