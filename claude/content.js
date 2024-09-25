@@ -200,61 +200,53 @@ async function handleMem0Click(popup) {
 
   isProcessingMem0 = true;
 
-  try {
-    chrome.storage.sync.get(["apiKey", "userId"], async function (data) {
-      const apiKey = data.apiKey;
-      const userId = data.userId || "chrome-extension-user";
+    try {
+        chrome.storage.sync.get(['apiKey', 'userId', 'access_token'], async function(data) {
+            const apiKey = data.apiKey;
+            const userId = data.userId || 'chrome-extension-user';
+            const accessToken = data.access_token;
 
-      if (!apiKey) {
-        showPopup(popup, "No API Key found");
-        isProcessingMem0 = false;
-        setButtonLoadingState(false);
-        return;
-      }
+            if (!apiKey && !accessToken) {
+                showPopup(popup, 'No API Key or Access Token found');
+                isProcessingMem0 = false;
+                setButtonLoadingState(false);
+                return;
+            }
+
+            const authHeader = accessToken ? `Bearer ${accessToken}` : `Token ${apiKey}`;
 
       const messages = getLastMessages(2);
       messages.push({ role: "user", content: message });
 
-      // Existing search API call
-      const searchResponse = await fetch(
-        "https://api.mem0.ai/v1/memories/search/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${apiKey}`,
-          },
-          body: JSON.stringify({
-            query: message,
-            user_id: userId,
-            rerank: true,
-            threshold: 0.1,
-            limit: 10,
-          }),
-        }
-      );
+            // Existing search API call
+            const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authHeader
+                },
+                body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.1, limit: 10 })
+            });
 
-      // New add memory API call (non-blocking)
-      fetch("https://api.mem0.ai/v1/memories/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${apiKey}`,
-        },
-        body: JSON.stringify({
-          messages: messages,
-          user_id: userId,
-          infer: true,
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            console.error("Failed to add memory:", response.status);
-          }
-        })
-        .catch((error) => {
-          console.error("Error adding memory:", error);
-        });
+            // New add memory API call (non-blocking)
+            fetch('https://api.mem0.ai/v1/memories/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authHeader
+                },
+                body: JSON.stringify({
+                    messages: messages,
+                    user_id: userId,
+                    infer: true
+                })
+            }).then(response => {
+                if (!response.ok) {
+                    console.error('Failed to add memory:', response.status);
+                }
+            }).catch(error => {
+                console.error('Error adding memory:', error);
+            });
 
       if (!searchResponse.ok) {
         throw new Error(

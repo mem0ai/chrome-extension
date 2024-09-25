@@ -9,10 +9,12 @@
         "128": "icons/icon128.png"
     },
     "permissions": [
-        "storage"
+        "storage",
+        "tabs"
     ],
     "host_permissions": [
-        "https://api.mem0.ai/*"
+        "https://api.mem0.ai/*",
+        "https://app.mem0.ai/*"
     ],
     "action": {
         "default_popup": "popup.html",
@@ -34,6 +36,10 @@
         {
             "matches": ["https://www.perplexity.ai/*"],
             "js": ["perplexity/content.js"]
+        },
+        {
+            "matches": ["https://app.mem0.ai/*"],
+            "js": ["mem0/content.js"]
         }
     ],
     "web_accessible_resources": [
