@@ -230,7 +230,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const newMemoryInput = document.createElement("div");
     newMemoryInput.className = "memory-item new-memory";
     newMemoryInput.innerHTML = `
-      
       <span contenteditable="true" placeholder="Enter new memory"></span>
       <div class="memory-buttons">
         <button class="icon-button save-new-btn" title="Save">
@@ -240,13 +239,14 @@ document.addEventListener("DOMContentLoaded", function () {
           <img src="/icons/close.svg" alt="Cancel" class="svg-icon">
         </button>
       </div>
-      
     `;
-    const memoryWrapper = document.querySelector("#memory-wrapper");
-    if (memoryWrapper) {
-      memoryWrapper.insertBefore(newMemoryInput, memoryWrapper.firstChild);
+
+    const scrollArea = document.querySelector(".scroll-area");
+    if (scrollArea) {
+      scrollArea.insertBefore(newMemoryInput, scrollArea.firstChild);
     } else {
-      memoriesContainer.insertBefore(newMemoryInput, addMemoryButton);
+      console.error("Scroll area not found");
+      return;
     }
 
     const saveNewBtn = newMemoryInput.querySelector(".save-new-btn");
