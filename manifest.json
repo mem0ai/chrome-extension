@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Mem0",
-    "version": "1.0",
+    "version": "1.3",
     "description": "Own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc & get personalized, relevant responses.",
     "icons": {
         "16": "icons/icon16.png",
