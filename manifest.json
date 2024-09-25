@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Claude Memory",
-    "version": "1.2",
-    "description": "Long-term memory for Claude AI. Personalize Claude's responses with information from your past interactions.",
+    "name": "Mem0",
+    "version": "1.0",
+    "description": "Own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc and get personalized, relevant responses.",
     "icons": {
         "16": "icons/icon16.png",
         "48": "icons/icon48.png",
