@@ -151,121 +151,129 @@ async function handleMem0Click(popup) {
   isProcessingMem0 = true;
 
   try {
-    chrome.storage.sync.get(["apiKey", "userId"], async function (data) {
-      const apiKey = data.apiKey;
-      const userId = data.userId || "chrome-extension-user";
+    chrome.storage.sync.get(
+      ["apiKey", "userId", "access_token"],
+      async function (data) {
+        const apiKey = data.apiKey;
+        const userId = data.userId || "chrome-extension-user";
+        const accessToken = data.access_token;
 
-      if (!apiKey) {
-        showPopup(popup, "No API Key found");
-        isProcessingMem0 = false;
-        setButtonLoadingState(false);
-        return;
-      }
+        if (!apiKey && !accessToken) {
+          showPopup(popup, "No API Key or Access Token found");
+          isProcessingMem0 = false;
+          setButtonLoadingState(false);
+          return;
+        }
 
-      const messages = getLastMessages(2);
-      messages.push({ role: "user", content: message });
+        const authHeader = accessToken
+          ? `Bearer ${accessToken}`
+          : `Token ${apiKey}`;
 
-      // Existing search API call
-      const searchResponse = await fetch(
-        "https://api.mem0.ai/v1/memories/search/",
-        {
+        const messages = getLastMessages(2);
+        messages.push({ role: "user", content: message });
+
+        // Existing search API call
+        const searchResponse = await fetch(
+          "https://api.mem0.ai/v1/memories/search/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({
+              query: message,
+              user_id: userId,
+              rerank: true,
+              threshold: 0.1,
+              limit: 10,
+            }),
+          }
+        );
+
+        fetch("https://api.mem0.ai/v1/memories/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Token ${apiKey}`,
+            Authorization: authHeader,
           },
           body: JSON.stringify({
-            query: message,
+            messages: messages,
             user_id: userId,
-            rerank: true,
-            threshold: 0.1,
-            limit: 10,
+            infer: true,
           }),
-        }
-      );
-
-      fetch("https://api.mem0.ai/v1/memories/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${apiKey}`,
-        },
-        body: JSON.stringify({
-          messages: messages,
-          user_id: userId,
-          infer: true,
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            console.error("Failed to add memory:", response.status);
-          }
         })
-        .catch((error) => {
-          console.error("Error adding memory:", error);
-        });
-
-      if (!searchResponse.ok) {
-        throw new Error(
-          `API request failed with status ${searchResponse.status}`
-        );
-      }
-
-      const responseData = await searchResponse.json();
-
-      if (inputElement) {
-        const memories = responseData.map((item) => item.memory);
-
-        if (memories.length > 0) {
-          // Prepare the memories content
-          let currentContent =
-            inputElement.tagName.toLowerCase() === "div"
-              ? inputElement.innerHTML
-              : inputElement.value;
-
-          const memInfoRegex =
-            /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
-          currentContent = currentContent.replace(memInfoRegex, "").trim();
-          const endIndex = currentContent.indexOf("</p>");
-          if (endIndex !== -1) {
-            currentContent = currentContent.slice(0, endIndex + 4);
-          }
-
-          let memoriesContent =
-            '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
-          memoriesContent +=
-            "<strong>Here is some more information about me:</strong>";
-          memories.forEach((mem) => {
-            memoriesContent += `<div>- ${mem}</div>`;
+          .then((response) => {
+            if (!response.ok) {
+              console.error("Failed to add memory:", response.status);
+            }
+          })
+          .catch((error) => {
+            console.error("Error adding memory:", error);
           });
-          memoriesContent += "</div>";
 
-          // Insert the memories into the input field
-          if (inputElement.tagName.toLowerCase() === "div") {
-            // For contenteditable div
-            inputElement.innerHTML = `${currentContent}<div><br></div>${memoriesContent}`;
+        if (!searchResponse.ok) {
+          throw new Error(
+            `API request failed with status ${searchResponse.status}`
+          );
+        }
+
+        const responseData = await searchResponse.json();
+
+        if (inputElement) {
+          const memories = responseData.map((item) => item.memory);
+
+          if (memories.length > 0) {
+            // Prepare the memories content
+            let currentContent =
+              inputElement.tagName.toLowerCase() === "div"
+                ? inputElement.innerHTML
+                : inputElement.value;
+
+            const memInfoRegex =
+              /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+            currentContent = currentContent.replace(memInfoRegex, "").trim();
+            const endIndex = currentContent.indexOf("</p>");
+            if (endIndex !== -1) {
+              currentContent = currentContent.slice(0, endIndex + 4);
+            }
+
+            let memoriesContent =
+              '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
+            memoriesContent +=
+              "<strong>Here is some more information about me:</strong>";
+            memories.forEach((mem) => {
+              memoriesContent += `<div>- ${mem}</div>`;
+            });
+            memoriesContent += "</div>";
+
+            // Insert the memories into the input field
+            if (inputElement.tagName.toLowerCase() === "div") {
+              // For contenteditable div
+              inputElement.innerHTML = `${currentContent}<div><br></div>${memoriesContent}`;
+            } else {
+              // For textarea
+              inputElement.value = `${currentContent}\n${memoriesContent}`;
+            }
+            inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+            setButtonLoadingState(false);
           } else {
-            // For textarea
-            inputElement.value = `${currentContent}\n${memoriesContent}`;
+            if (inputElement.tagName.toLowerCase() === "div") {
+              inputElement.innerHTML = message;
+            } else {
+              // For textarea
+              inputElement.value = message;
+            }
+            inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+            showPopup(popup, "No memories found");
+            setButtonLoadingState(false);
           }
-          inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-          setButtonLoadingState(false);
         } else {
-          if (inputElement.tagName.toLowerCase() === "div") {
-            inputElement.innerHTML = message;
-          } else {
-            // For textarea
-            inputElement.value = message;
-          }
-          inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-          showPopup(popup, "No memories found");
+          showPopup(popup, "No input field found to update");
           setButtonLoadingState(false);
         }
-      } else {
-        showPopup(popup, "No input field found to update");
-        setButtonLoadingState(false);
       }
-    });
+    );
   } catch (error) {
     console.error("Error:", error);
     setButtonLoadingState(false);
@@ -359,10 +367,11 @@ function addSyncButton() {
       syncButton = document.createElement("button");
       syncButton.id = "sync-button";
       syncButton.className = "btn relative btn-neutral mr-2";
-      syncButton.style.color = "#b4b4b4";
+      syncButton.style.color = "#b4844a";
+      syncButton.style.backgroundColor = "transparent";
       syncButton.innerHTML =
         '<div id="sync-button-content" class="flex items-center justify-center font-normal">Sync</div>';
-      syncButton.style.border = "1px solid #b4b4b4"; // Change border to 2px solid #444343
+      syncButton.style.border = "1px solid #b4844a";
 
       const syncIcon = document.createElement("img");
       syncIcon.src = chrome.runtime.getURL("icons/mem0-claude-icon-purple.png");
@@ -376,12 +385,12 @@ function addSyncButton() {
 
       syncButton.addEventListener("mouseenter", () => {
         if (!syncButton.disabled) {
-          syncButton.style.backgroundColor = "#424242";
+          syncButton.style.filter = "opacity(0.7)";
         }
       });
       syncButton.addEventListener("mouseleave", () => {
         if (!syncButton.disabled) {
-          syncButton.style.backgroundColor = "transparent";
+          syncButton.style.filter = "opacity(1)";
         }
       });
     }
@@ -474,14 +483,12 @@ function setSyncButtonLoadingState(isLoading) {
       document.body.style.cursor = "wait";
       syncButton.style.opacity = "0.7";
       syncButtonContent.textContent = "Syncing...";
-      syncButton.style.backgroundColor = "#424242";
     } else {
       syncButton.disabled = false;
       syncButton.style.cursor = "pointer";
       syncButton.style.opacity = "1";
       document.body.style.cursor = "default";
       syncButtonContent.textContent = "Sync";
-      syncButton.style.backgroundColor = "transparent";
     }
   }
 }
@@ -521,32 +528,38 @@ function showSyncPopup(button, message) {
 
 function sendMemoryToMem0(memory) {
   return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(["apiKey", "userId"], function (items) {
-      if (items.apiKey && items.userId) {
-        fetch("https://api.mem0.ai/v1/memories/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${items.apiKey}`,
-          },
-          body: JSON.stringify({
-            messages: [{ content: memory.content, role: "user" }],
-            user_id: items.userId,
-            infer: true,
-          }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              reject(`Failed to add memory: ${response.status}`);
-            } else {
-              resolve();
-            }
+    chrome.storage.sync.get(
+      ["apiKey", "userId", "access_token"],
+      function (items) {
+        if ((items.apiKey || items.access_token) && items.userId) {
+          const authHeader = items.access_token
+            ? `Bearer ${items.access_token}`
+            : `Token ${items.apiKey}`;
+          fetch("https://api.mem0.ai/v1/memories/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({
+              messages: [{ content: memory.content, role: "user" }],
+              user_id: items.userId,
+              infer: true,
+            }),
           })
-          .catch((error) => reject(`Error sending memory to Mem0: ${error}`));
-      } else {
-        reject("API Key or User ID not set");
+            .then((response) => {
+              if (!response.ok) {
+                reject(`Failed to add memory: ${response.status}`);
+              } else {
+                resolve();
+              }
+            })
+            .catch((error) => reject(`Error sending memory to Mem0: ${error}`));
+        } else {
+          reject("API Key/Access Token or User ID not set");
+        }
       }
-    });
+    );
   });
 }
 
@@ -555,7 +568,7 @@ function initializeMem0Integration() {
     addMem0Button();
     addSyncButton();
   });
-  
+
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
@@ -572,7 +585,7 @@ function initializeMem0Integration() {
     addMem0Button();
     addSyncButton();
   });
-  
+
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
