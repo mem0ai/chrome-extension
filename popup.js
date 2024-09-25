@@ -201,16 +201,18 @@ document.addEventListener("DOMContentLoaded", function () {
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
       const headers = getHeaders(data.apiKey, data.access_token);
       fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
-        method: "PATCH",
+        method: "PUT",
         headers: headers,
-        body: JSON.stringify({ memory: newContent }),
+        body: JSON.stringify({ text: newContent }),
       })
         .then((response) => {
           if (response.ok) {
-            const saveBtn = document.querySelector(
-              `[data-id="${memoryId}"].save-btn`
-            );
-            saveBtn.style.display = "none";
+            const editButton = document.querySelector(`[data-id="${memoryId}"]`).parentElement.querySelector('.edit-btn');
+            const originalContent = editButton.innerHTML;
+            editButton.innerHTML = '<img src="/icons/check.svg" alt="Updated" class="svg-icon">';
+            setTimeout(() => {
+              editButton.innerHTML = originalContent;
+            }, 500);
           } else {
             console.error("Failed to update memory");
           }
