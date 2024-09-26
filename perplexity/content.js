@@ -173,7 +173,7 @@ function hideTooltip(tooltip) {
   tooltip.style.opacity = "0";
 }
 
-async function handleMem0Click(defaultTooltip, messageTooltip) {
+async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton = false) {
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
     document.querySelector("textarea");
@@ -202,10 +202,18 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
   hideTooltip(defaultTooltip);
 
   try {
-    chrome.storage.sync.get(['apiKey', 'userId', 'access_token'], async function(data) {
-      const apiKey = data.apiKey;
-      const userId = data.userId || 'perplexity-user';
-      const accessToken = data.access_token;
+    const data = await new Promise((resolve) => {
+      chrome.storage.sync.get(
+        ["apiKey", "userId", "access_token"],
+        function (items) {
+          resolve(items);
+        }
+      );
+    });
+
+    const apiKey = data.apiKey;
+    const userId = data.userId || "perplexity-user";
+    const accessToken = data.access_token;
 
       if (!apiKey && !accessToken) {
         showTooltip(messageTooltip, 'No API Key or Access Token found');
@@ -237,26 +245,6 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
         })
       });
 
-      // New add memory API call (non-blocking)
-      fetch('https://api.mem0.ai/v1/memories/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader
-        },
-        body: JSON.stringify({
-          messages: messages,
-          user_id: userId,
-          infer: true
-        })
-      }).then(response => {
-        if (!response.ok) {
-          console.error('Failed to add memory:', response.status);
-        }
-      }).catch(error => {
-        console.error('Error adding memory:', error);
-      });
-
       if (!searchResponse.ok) {
         throw new Error(
           `API request failed with status ${searchResponse.status}`
@@ -280,8 +268,11 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
           currentContent = currentContent.replace(memInfoRegex, "").trim();
 
           let memoriesContent = "\n\nHere is some more information about me:\n";
-          memories.forEach((mem) => {
-            memoriesContent += `- ${mem}\n`;
+          memories.forEach((mem, index) => {
+            memoriesContent += `- ${mem}`;
+            if (index < memories.length - 1) {
+              memoriesContent += "\n";
+            }
           });
 
           // Insert the memories into the input field
@@ -302,7 +293,38 @@ async function handleMem0Click(defaultTooltip, messageTooltip) {
       }
       setTimeout(() => hideTooltip(messageTooltip), 2000);
       setButtonLoadingState(false);
-    });
+
+      if (clickSendButton) {
+        const sendButton = document.querySelector('button[aria-label="Submit"]');
+          if (sendButton) {
+              setTimeout(() => {
+                sendButton.click();
+              }, 100);
+          } else {
+              console.error("Send button not found");
+          }
+        }
+
+      // New add memory API call (non-blocking)
+      fetch('https://api.mem0.ai/v1/memories/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          messages: messages,
+          user_id: userId,
+          infer: true
+        })
+      }).then(response => {
+        if (!response.ok) {
+          console.error('Failed to add memory:', response.status);
+        }
+      }).catch(error => {
+        console.error('Error adding memory:', error);
+      });
+
   } catch (error) {
     console.error("Error:", error);
     setButtonLoadingState(false);
@@ -369,7 +391,9 @@ function initializeMem0Integration() {
       const messageTooltip = document.querySelector(
         "#mem0-button-container > div:nth-child(3)"
       );
-      handleMem0Click(defaultTooltip, messageTooltip);
+      (async () => {
+        await handleMem0Click(defaultTooltip, messageTooltip, true);
+      })();
     }
   });
 

@@ -124,7 +124,7 @@ function addMem0Button() {
   }
 }
 
-async function handleMem0Click(popup) {
+async function handleMem0Click(popup, clickSendButton = false) {
   setButtonLoadingState(true);
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
@@ -151,9 +151,15 @@ async function handleMem0Click(popup) {
   isProcessingMem0 = true;
 
   try {
-    chrome.storage.sync.get(
-      ["apiKey", "userId", "access_token"],
-      async function (data) {
+      const data = await new Promise((resolve) => {
+        chrome.storage.sync.get(
+        ["apiKey", "userId", "access_token"],
+            function (items) {
+            resolve(items);
+            }
+        );
+        });
+
         const apiKey = data.apiKey;
         const userId = data.userId || "chrome-extension-user";
         const accessToken = data.access_token;
@@ -191,27 +197,6 @@ async function handleMem0Click(popup) {
           }
         );
 
-        fetch("https://api.mem0.ai/v1/memories/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: authHeader,
-          },
-          body: JSON.stringify({
-            messages: messages,
-            user_id: userId,
-            infer: true,
-          }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              console.error("Failed to add memory:", response.status);
-            }
-          })
-          .catch((error) => {
-            console.error("Error adding memory:", error);
-          });
-
         if (!searchResponse.ok) {
           throw new Error(
             `API request failed with status ${searchResponse.status}`
@@ -221,59 +206,80 @@ async function handleMem0Click(popup) {
         const responseData = await searchResponse.json();
 
         if (inputElement) {
-          const memories = responseData.map((item) => item.memory);
+            const memories = responseData.map((item) => item.memory);
 
-          if (memories.length > 0) {
-            // Prepare the memories content
+            if (memories.length > 0) {
             let currentContent =
-              inputElement.tagName.toLowerCase() === "div"
+                inputElement.tagName.toLowerCase() === "div"
                 ? inputElement.innerHTML
                 : inputElement.value;
 
             const memInfoRegex =
-              /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+                /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
             currentContent = currentContent.replace(memInfoRegex, "").trim();
             const endIndex = currentContent.indexOf("</p>");
             if (endIndex !== -1) {
-              currentContent = currentContent.slice(0, endIndex + 4);
+                currentContent = currentContent.slice(0, endIndex + 4);
             }
 
             let memoriesContent =
-              '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
+                '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
             memoriesContent +=
-              "<strong>Here is some more information about me:</strong>";
+                "<strong>Here is some more information about me:</strong>";
             memories.forEach((mem) => {
-              memoriesContent += `<div>- ${mem}</div>`;
+                memoriesContent += `<div>- ${mem}</div>`;
             });
             memoriesContent += "</div>";
 
-            // Insert the memories into the input field
             if (inputElement.tagName.toLowerCase() === "div") {
-              // For contenteditable div
-              inputElement.innerHTML = `${currentContent}<div><br></div>${memoriesContent}`;
+                inputElement.innerHTML = `${currentContent}<div><br></div>${memoriesContent}`;
             } else {
-              // For textarea
-              inputElement.value = `${currentContent}\n${memoriesContent}`;
+                inputElement.value = `${currentContent}\n${memoriesContent}`;
             }
             inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-            setButtonLoadingState(false);
-          } else {
-            if (inputElement.tagName.toLowerCase() === "div") {
-              inputElement.innerHTML = message;
             } else {
-              // For textarea
-              inputElement.value = message;
+            if (inputElement.tagName.toLowerCase() === "div") {
+                inputElement.innerHTML = message;
+            } else {
+                inputElement.value = message;
             }
             inputElement.dispatchEvent(new Event("input", { bubbles: true }));
             showPopup(popup, "No memories found");
-            setButtonLoadingState(false);
-          }
+            }
         } else {
-          showPopup(popup, "No input field found to update");
-          setButtonLoadingState(false);
+            showPopup(popup, "No input field found to update");
         }
-      }
-    );
+    
+        setButtonLoadingState(false);
+
+
+        if (clickSendButton) {
+        const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+        if (sendButton) {
+            setTimeout(() => {
+                sendButton.click();
+            }, 100);
+        } else {
+            console.error("Send button not found");
+        }
+        }
+
+        // Proceed with adding memory asynchronously without awaiting
+        fetch("https://api.mem0.ai/v1/memories/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader,
+        },
+        body: JSON.stringify({
+            messages: messages,
+            user_id: userId,
+            infer: true,
+        }),
+        }).catch((error) => {
+        console.error("Error adding memory:", error);
+        });
+
   } catch (error) {
     console.error("Error:", error);
     setButtonLoadingState(false);
@@ -574,7 +580,9 @@ function initializeMem0Integration() {
       event.preventDefault();
       const popup = document.querySelector(".mem0-popup");
       if (popup) {
-        handleMem0Click(popup);
+        (async () => {
+          await handleMem0Click(popup, true);
+        })();
       } else {
         console.error("Mem0 popup not found");
       }

@@ -173,7 +173,7 @@ function addMem0Button() {
   }
 }
 
-async function handleMem0Click(popup) {
+async function handleMem0Click(popup, clickSendButton = false) {
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
     document.querySelector("textarea");
@@ -201,10 +201,18 @@ async function handleMem0Click(popup) {
   isProcessingMem0 = true;
 
     try {
-        chrome.storage.sync.get(['apiKey', 'userId', 'access_token'], async function(data) {
-            const apiKey = data.apiKey;
-            const userId = data.userId || 'chrome-extension-user';
-            const accessToken = data.access_token;
+        const data = await new Promise((resolve) => {
+            chrome.storage.sync.get(
+            ["apiKey", "userId", "access_token"],
+                function (items) {
+                resolve(items);
+                }
+            );
+        });
+
+        const apiKey = data.apiKey;
+        const userId = data.userId || "chrome-extension-user";
+        const accessToken = data.access_token;
 
             if (!apiKey && !accessToken) {
                 showPopup(popup, 'No API Key or Access Token found');
@@ -215,8 +223,8 @@ async function handleMem0Click(popup) {
 
             const authHeader = accessToken ? `Bearer ${accessToken}` : `Token ${apiKey}`;
 
-      const messages = getLastMessages(2);
-      messages.push({ role: "user", content: message });
+            const messages = getLastMessages(2);
+            messages.push({ role: "user", content: message });
 
             // Existing search API call
             const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
@@ -227,6 +235,79 @@ async function handleMem0Click(popup) {
                 },
                 body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.1, limit: 10 })
             });
+
+            if (clickSendButton) {
+                const sendButton = document.querySelector('button[aria-label="Send Message"]');
+                if (sendButton) {
+                    setTimeout(() => {
+                        sendButton.click();
+                    }, 100);
+                } else {
+                    console.error("Send button not found");
+                }
+                }
+
+            if (!searchResponse.ok) {
+                throw new Error(
+                    `API request failed with status ${searchResponse.status}`
+                );
+                }
+
+            const responseData = await searchResponse.json();
+
+            if (inputElement) {
+            const memories = responseData.map((item) => item.memory);
+
+            if (memories.length > 0) {
+                let currentContent =
+                inputElement.tagName.toLowerCase() === "div"
+                    ? inputElement.innerHTML
+                    : inputElement.value;
+
+                const memInfoRegex =
+                /<p><strong>Here is some more information about me:<\/strong><\/p>([\s\S]*?)(?=<p><strong>|$)/;
+                const memInfoMatch = currentContent.match(memInfoRegex);
+
+                // Prepare new memory content
+                let memoryContent = "";
+                memories.forEach((mem) => {
+                memoryContent += `<p>- ${mem}</p>`;
+                });
+
+                if (memInfoMatch) {
+                // Replace existing memory information
+                currentContent = currentContent.replace(
+                    memInfoRegex,
+                    `<p><strong>Here is some more information about me:</strong></p>${memoryContent}`
+                );
+                } else {
+                // Append new memory information
+                currentContent += `<p><br></p><p><strong>Here is some more information about me:</strong></p>${memoryContent}`;
+                }
+
+                if (inputElement.tagName.toLowerCase() === "div") {
+                inputElement.innerHTML = currentContent;
+                } else {
+                inputElement.value = currentContent;
+                }
+
+                inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+                setButtonLoadingState(false);
+            } else {
+                if (inputElement.tagName.toLowerCase() === "div") {
+                inputElement.innerHTML = message;
+                } else {
+                // For textarea
+                inputElement.value = message;
+                }
+                inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+                showPopup(popup, "No memories found");
+                setButtonLoadingState(false);
+            }
+            } else {
+            showPopup(popup, "No input field found to update");
+            setButtonLoadingState(false);
+            }
 
             // New add memory API call (non-blocking)
             fetch('https://api.mem0.ai/v1/memories/', {
@@ -248,68 +329,6 @@ async function handleMem0Click(popup) {
                 console.error('Error adding memory:', error);
             });
 
-      if (!searchResponse.ok) {
-        throw new Error(
-          `API request failed with status ${searchResponse.status}`
-        );
-      }
-
-      const responseData = await searchResponse.json();
-
-      if (inputElement) {
-        const memories = responseData.map((item) => item.memory);
-
-        if (memories.length > 0) {
-          let currentContent =
-            inputElement.tagName.toLowerCase() === "div"
-              ? inputElement.innerHTML
-              : inputElement.value;
-
-          const memInfoRegex =
-            /<p><strong>Here is some more information about me:<\/strong><\/p>([\s\S]*?)(?=<p><strong>|$)/;
-          const memInfoMatch = currentContent.match(memInfoRegex);
-
-          // Prepare new memory content
-          let memoryContent = "";
-          memories.forEach((mem) => {
-            memoryContent += `<p>- ${mem}</p>`;
-          });
-
-          if (memInfoMatch) {
-            // Replace existing memory information
-            currentContent = currentContent.replace(
-              memInfoRegex,
-              `<p><strong>Here is some more information about me:</strong></p>${memoryContent}`
-            );
-          } else {
-            // Append new memory information
-            currentContent += `<p><br></p><p><strong>Here is some more information about me:</strong></p>${memoryContent}`;
-          }
-
-          if (inputElement.tagName.toLowerCase() === "div") {
-            inputElement.innerHTML = currentContent;
-          } else {
-            inputElement.value = currentContent;
-          }
-
-          inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-          setButtonLoadingState(false);
-        } else {
-          if (inputElement.tagName.toLowerCase() === "div") {
-            inputElement.innerHTML = message;
-          } else {
-            // For textarea
-            inputElement.value = message;
-          }
-          inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-          showPopup(popup, "No memories found");
-          setButtonLoadingState(false);
-        }
-      } else {
-        showPopup(popup, "No input field found to update");
-        setButtonLoadingState(false);
-      }
-    });
   } catch (error) {
     console.error("Error:", error);
     showPopup(popup, "Failed to send message to Mem0");
@@ -394,7 +413,9 @@ function initializeMem0Integration() {
       event.preventDefault();
       const popup = document.querySelector(".mem0-popup");
       if (popup) {
-        handleMem0Click(popup);
+        (async () => {
+            await handleMem0Click(popup, true);
+        })();
       } else {
         console.error("Mem0 popup not found");
       }
