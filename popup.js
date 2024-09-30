@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (googleSignInButton) {
     googleSignInButton.addEventListener("click", function () {
       chrome.storage.sync.set({ userId: "chrome-extension-user" });
-      chrome.tabs.create({ url: "https://app.mem0.ai/" }, function (tab) {
+      chrome.tabs.create({ url: "https://app.mem0.ai/login?source=chrome-extension" }, function (tab) {
         window.close();
       });
     });
