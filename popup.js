@@ -48,9 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <img src="icons/mem0-logo.png" alt="Mem0 Logo" class="logo">
         </div>
         <div class="header-buttons">
-          <button id="logoutBtn" class="header-icon-button" title="Logout">
-            <img src="icons/logout.svg" alt="Logout" class="svg-icon" >
-          </button>
+          <!-- Keeping this for future use -->
         </div>
       `;
       memoriesContainer.appendChild(header);
@@ -93,9 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
         <span> + m</span>
       `;
       memoriesContainer.appendChild(shortcutInfo);
-
-      // Event listener for logout button
-      document.getElementById("logoutBtn").addEventListener("click", logout);
     }
 
     function fetchMemories(userId, apiKey, accessToken) {
@@ -357,13 +352,6 @@ document.addEventListener("DOMContentLoaded", function () {
       chrome.tabs.create({ url: "https://app.mem0.ai/" }, function (tab) {
         window.close();
       });
-    });
-  }
-
-  function logout() {
-    chrome.storage.sync.remove(['apiKey', 'userId', 'access_token'], function() {
-      console.log('User logged out');
-      showSettings();
     });
   }
 
