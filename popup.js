@@ -56,6 +56,10 @@ document.addEventListener("DOMContentLoaded", function () {
           <img src="icons/mem0-logo.png" alt="Mem0 Logo" class="logo">
         </div>
         <div class="header-buttons">
+          <!-- New search button -->
+          <button id="searchBtn" class="header-icon-button" title="Search Memories">
+            <img src="icons/search.svg" alt="Search" class="svg-icon">
+          </button>
           <!-- Keeping this for future use -->
         </div>
       `;
@@ -99,6 +103,9 @@ document.addEventListener("DOMContentLoaded", function () {
         <span> + m</span>
       `;
     memoriesContainer.appendChild(shortcutInfo);
+
+    const searchBtn = header.querySelector("#searchBtn");
+    searchBtn.addEventListener("click", toggleSearch);
   }
 
   function fetchMemories(userId, apiKey, accessToken) {
@@ -122,14 +129,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const scrollArea = memoriesContainer.querySelector(".scroll-area");
     scrollArea.innerHTML = "";
 
+    // Show or hide search button based on presence of memories
+    const searchBtn = document.getElementById("searchBtn");
     if (memories.length === 0) {
+      searchBtn.style.display = "none";
       scrollArea.innerHTML = `
-          <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
-            <p>No memories found</p>
-            <p>Click the + button to add a new memory or use Mem0 with the chatbot of your choice.</p>
-          </div>
-        `;
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
+          <p>No memories found</p>
+          <p>Click the + button to add a new memory or use Mem0 with the chatbot of your choice.</p>
+        </div>
+      `;
     } else {
+      searchBtn.style.display = "flex";
       memories.forEach((memoryItem) => {
         const memoryElement = document.createElement("div");
         memoryElement.className = "memory-item";
@@ -441,6 +452,69 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Add this function to handle search functionality
+  function toggleSearch() {
+    const existingSearchInput = document.querySelector(
+      ".memory-item.search-memory"
+    );
+    if (existingSearchInput) {
+      existingSearchInput.remove();
+    } else {
+      const searchMemoryInput = document.createElement("div");
+      searchMemoryInput.className = "memory-item search-memory";
+      searchMemoryInput.innerHTML = `
+        <span contenteditable="true" placeholder="Search memories..."></span>
+        <div class="search-memory-buttons memory-buttons">
+          <button class="icon-button cancel-search-btn" title="Cancel">
+            <img src="/icons/close.svg" alt="Cancel" class="svg-icon">
+          </button>
+        </div>
+      `;
+
+      const scrollArea = document.querySelector(".scroll-area");
+      if (scrollArea) {
+        scrollArea.insertBefore(searchMemoryInput, scrollArea.firstChild);
+      } else {
+        console.error("Scroll area not found");
+        return;
+      }
+
+      const cancelSearchBtn =
+        searchMemoryInput.querySelector(".cancel-search-btn");
+      const searchMemorySpan = searchMemoryInput.querySelector("span");
+
+      // Focus the search memory input
+      searchMemorySpan.focus();
+
+      // Add event listener for the input event
+      searchMemorySpan.addEventListener("input", function () {
+        const searchTerm = this.textContent.trim().toLowerCase();
+        const memoryItems = document.querySelectorAll(
+          ".memory-item:not(.search-memory)"
+        );
+
+        memoryItems.forEach((item) => {
+          const memoryText = item
+            .querySelector("span")
+            .textContent.toLowerCase();
+          if (memoryText.includes(searchTerm)) {
+            item.style.display = "flex";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      });
+
+      cancelSearchBtn.addEventListener("click", function () {
+        searchMemoryInput.remove();
+        // Reset visibility of all memory items
+        document.querySelectorAll(".memory-item").forEach((item) => {
+          item.style.display = "flex";
+        });
+      });
+    }
+  }
+
   // Update the CSS styles
   const style = document.createElement("style");
   style.textContent = `
@@ -448,7 +522,7 @@ document.addEventListener("DOMContentLoaded", function () {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 10px 15px 15px;
+      padding: 20px 10px 10px 15px;
     }
       .svg-icon {
     }
@@ -576,13 +650,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     .shortcut-info {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 5px;
-        padding: 6px;
-        font-size: 12px;
-        color: #666;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      padding: 6px;
+      font-size: 12px;
+      color: #666;
+      background-color: #f5f5f5; // Added very light gray background
     }
 
     .loading-indicator {
@@ -648,6 +723,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     .memory-item.highlight {
       background-color: #f0f0f0;
+    }
+
+    .search-memory {
+      display: flex;
+      padding: 10px 10px 10px 15px;
+      align-items: center;
+      border-bottom: 0.5px solid #e0e0e0;
+    }
+
+    .search-memory span[contenteditable] {
+      flex: 1;
+      border: none;
+      padding: 0;
+      outline: none;
+      min-height: 16px;
+    }
+
+    .search-memory span[contenteditable]:empty:before {
+      content: attr(placeholder);
+      color: #999;
     }
   `;
   document.head.appendChild(style);
