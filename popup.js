@@ -1,49 +1,57 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const memoriesContainer = document.getElementById("memoriesContainer");
-    const settingsContainer = document.getElementById("settingsContainer");
-    const apiKeyInput = document.getElementById("apiKey");
-    const userIdInput = document.getElementById("userId");
-    const saveButton = document.getElementById("saveButton");
-    const openDashboardButton = document.getElementById("openDashboardButton");
-    const googleSignInButton = document.getElementById("googleSignInButton");
-    const addMemoryButton = document.createElement("button");
-    addMemoryButton.id = "addMemoryBtn";
+  const memoriesContainer = document.getElementById("memoriesContainer");
+  const settingsContainer = document.getElementById("settingsContainer");
+  const apiKeyInput = document.getElementById("apiKey");
+  const userIdInput = document.getElementById("userId");
+  const saveButton = document.getElementById("saveButton");
+  const openDashboardButton = document.getElementById("openDashboardButton");
+  const googleSignInButton = document.getElementById("googleSignInButton");
+  const addMemoryButton = document.createElement("button");
+  addMemoryButton.id = "addMemoryBtn";
 
-    function checkAuthAndFetchMemories(newMemory = false) {
-      chrome.storage.sync.get(
-        ["apiKey", "userId", "access_token"],
-        function (data) {
-          if (data.apiKey || data.access_token) {
-            // Show empty memories container immediately
-            displayEmptyMemories();
-            fetchMemories(data.userId, data.apiKey, data.access_token).then(
-              () => {
-                if (newMemory) {
-                  const scrollArea = document.querySelector(".scroll-area");
-                  if (scrollArea) {
-                    scrollArea.scrollTop = scrollArea.scrollHeight;
+  function checkAuthAndFetchMemories(newMemory = false) {
+    chrome.storage.sync.get(
+      ["apiKey", "userId", "access_token"],
+      function (data) {
+        if (data.apiKey || data.access_token) {
+          // Show empty memories container immediately
+          displayEmptyMemories();
+          fetchMemories(data.userId, data.apiKey, data.access_token).then(
+            () => {
+              if (newMemory) {
+                const scrollArea = document.querySelector(".scroll-area");
+                if (scrollArea) {
+                  scrollArea.scrollTop = scrollArea.scrollHeight;
+                  // Highlight the new memory
+                  const newMemoryElement = scrollArea.lastElementChild;
+                  if (newMemoryElement) {
+                    newMemoryElement.classList.add("highlight");
+                    setTimeout(() => {
+                      newMemoryElement.classList.remove("highlight");
+                    }, 1000);
                   }
                 }
               }
-            );
-          } else {
-            showSettings();
-          }
+            }
+          );
+        } else {
+          showSettings();
         }
-      );
-    }
+      }
+    );
+  }
 
-    function displayEmptyMemories() {
-      memoriesContainer.innerHTML = "";
-      settingsContainer.style.display = "none";
-      memoriesContainer.style.display = "flex";
-      memoriesContainer.style.flexDirection = "column";
-      memoriesContainer.style.width = "300px";
+  function displayEmptyMemories() {
+    memoriesContainer.innerHTML = "";
+    settingsContainer.style.display = "none";
+    memoriesContainer.style.display = "flex";
+    memoriesContainer.style.flexDirection = "column";
+    memoriesContainer.style.width = "300px";
 
-      // Create header
-      const header = document.createElement("div");
-      header.className = "header";
-      header.innerHTML = `
+    // Create header
+    const header = document.createElement("div");
+    header.className = "header";
+    header.innerHTML = `
         <div class="logo-container">
           <img src="icons/mem0-logo.png" alt="Mem0 Logo" class="logo">
         </div>
@@ -51,32 +59,32 @@ document.addEventListener("DOMContentLoaded", function () {
           <!-- Keeping this for future use -->
         </div>
       `;
-      memoriesContainer.appendChild(header);
+    memoriesContainer.appendChild(header);
 
-      // Add memory button
-      addMemoryButton.className = "header-icon-button";
-      addMemoryButton.title = "Add Memory";
-      addMemoryButton.innerHTML =
-        '<img src="icons/add.svg" alt="Add Memory" class="svg-icon">';
-      header
-        .querySelector(".header-buttons")
-        .insertBefore(addMemoryButton, header.querySelector("#logoutBtn"));
+    // Add memory button
+    addMemoryButton.className = "header-icon-button";
+    addMemoryButton.title = "Add Memory";
+    addMemoryButton.innerHTML =
+      '<img src="icons/add.svg" alt="Add Memory" class="svg-icon">';
+    header
+      .querySelector(".header-buttons")
+      .insertBefore(addMemoryButton, header.querySelector("#logoutBtn"));
 
-      // Create scroll area with loading indicator
-      const scrollArea = document.createElement("div");
-      scrollArea.className = "scroll-area";
-      scrollArea.innerHTML = `
+    // Create scroll area with loading indicator
+    const scrollArea = document.createElement("div");
+    scrollArea.className = "scroll-area";
+    scrollArea.innerHTML = `
         <div class="loading-indicator">
           <div class="loader"></div>
           <p>Loading memories...</p>
         </div>
       `;
-      memoriesContainer.appendChild(scrollArea);
+    memoriesContainer.appendChild(scrollArea);
 
-      // Create shortcut info
-      const shortcutInfo = document.createElement("div");
-      shortcutInfo.className = "shortcut-info";
-      shortcutInfo.innerHTML = `
+    // Create shortcut info
+    const shortcutInfo = document.createElement("div");
+    shortcutInfo.className = "shortcut-info";
+    shortcutInfo.innerHTML = `
         <span>Mem0 Shortcut: </span>
         <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="12px" viewBox="0 0 24 24" width="12px" fill="#999999">
           <g>
@@ -90,80 +98,137 @@ document.addEventListener("DOMContentLoaded", function () {
         </svg>
         <span> + m</span>
       `;
-      memoriesContainer.appendChild(shortcutInfo);
-    }
+    memoriesContainer.appendChild(shortcutInfo);
+  }
 
-    function fetchMemories(userId, apiKey, accessToken) {
-      const headers = getHeaders(apiKey, accessToken);
-      return fetch(`https://api.mem0.ai/v1/memories/?user_id=${userId}`, {
-        method: "GET",
-        headers: headers,
+  function fetchMemories(userId, apiKey, accessToken) {
+    const headers = getHeaders(apiKey, accessToken);
+    return fetch(`https://api.mem0.ai/v1/memories/?user_id=${userId}`, {
+      method: "GET",
+      headers: headers,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        displayMemories(data);
       })
-        .then((response) => response.json())
-        .then((data) => {
-          displayMemories(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching memories:", error);
-          const scrollArea = memoriesContainer.querySelector(".scroll-area");
-          scrollArea.innerHTML = "<p>Error fetching memories</p>";
-        });
-    }
+      .catch((error) => {
+        console.error("Error fetching memories:", error);
+        const scrollArea = memoriesContainer.querySelector(".scroll-area");
+        scrollArea.innerHTML = "<p>Error fetching memories</p>";
+      });
+  }
 
-    function displayMemories(memories) {
-      const scrollArea = memoriesContainer.querySelector(".scroll-area");
-      scrollArea.innerHTML = "";
+  function displayMemories(memories) {
+    const scrollArea = memoriesContainer.querySelector(".scroll-area");
+    scrollArea.innerHTML = "";
 
-      if (memories.length === 0) {
-        scrollArea.innerHTML = `
+    if (memories.length === 0) {
+      scrollArea.innerHTML = `
           <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
             <p>No memories found</p>
             <p>Click the + button to add a new memory or use Mem0 with the chatbot of your choice.</p>
           </div>
         `;
-      } else {
-        memories.forEach((memoryItem) => {
-          const memoryElement = document.createElement("div");
-          memoryElement.className = "memory-item";
-          memoryElement.innerHTML = `
-            <span contenteditable="true">${memoryItem.memory}</span>
-            <div class="memory-buttons">
-              <button class="icon-button edit-btn" data-id="${memoryItem.id}">
-                <img src="/icons/edit.svg" alt="Edit" class="svg-icon">
-              </button>
-              <button class="icon-button delete-btn" data-id="${memoryItem.id}">
-                <img src="/icons/delete.svg" alt="Delete" class="svg-icon">
-              </button>
-            </div>
-          `;
-          scrollArea.appendChild(memoryElement);
-  
-          const span = memoryElement.querySelector("span");
-          const editBtn = memoryElement.querySelector(".edit-btn");
-  
-          span.addEventListener("input", () => {
-            editBtn.style.display = "inline";
-          });
-  
-          span.addEventListener("blur", () => {
-            if (span.textContent.trim() === memoryItem.memory) {
-              editBtn.style.display = "none";
-            }
-          });
-  
-          editBtn.addEventListener("click", () => {
-            editMemory(memoryItem.id, span.textContent.trim());
-          });
+    } else {
+      memories.forEach((memoryItem) => {
+        const memoryElement = document.createElement("div");
+        memoryElement.className = "memory-item";
+        memoryElement.innerHTML = `
+          <span>${memoryItem.memory}</span>
+          <div class="memory-buttons">
+            <button class="icon-button edit-btn" data-id="${memoryItem.id}">
+              <img src="/icons/edit.svg" alt="Edit" class="svg-icon">
+            </button>
+            <button class="icon-button delete-btn" data-id="${memoryItem.id}">
+              <img src="/icons/delete.svg" alt="Delete" class="svg-icon">
+            </button>
+          </div>
+        `;
+        scrollArea.appendChild(memoryElement);
+
+        const span = memoryElement.querySelector("span");
+        const editBtn = memoryElement.querySelector(".edit-btn");
+
+        editBtn.addEventListener("click", (event) => {
+          event.stopPropagation(); // Prevent the click from bubbling up
+          if (editBtn.classList.contains("editing")) {
+            saveEdit(span, editBtn, memoryItem.id);
+          } else {
+            enterEditMode(span, editBtn);
+          }
         });
-      }
-  
-      // Event listeners for delete buttons
-      document.querySelectorAll(".delete-btn").forEach((button) => {
-        button.addEventListener("click", function () {
-          deleteMemory(this.dataset.id);
+
+        // Add click event listener to the memory item
+        memoryElement.addEventListener("click", (event) => {
+          if (event.target !== span && editBtn.classList.contains("editing")) {
+            saveEdit(span, editBtn, memoryItem.id);
+          }
         });
       });
     }
+
+    // Add click event listener to the document body
+    document.body.addEventListener("click", (event) => {
+      const activeEditBtn = document.querySelector(".edit-btn.editing");
+      if (activeEditBtn && !event.target.closest(".memory-item")) {
+        const span = activeEditBtn
+          .closest(".memory-item")
+          .querySelector("span");
+        cancelEdit(span, activeEditBtn);
+      }
+    });
+
+    // Event listeners for delete buttons
+    document.querySelectorAll(".delete-btn").forEach((button) => {
+      button.addEventListener("click", function () {
+        deleteMemory(this.dataset.id);
+      });
+    });
+  }
+
+  function enterEditMode(span, editBtn) {
+    span.setAttribute("data-original-content", span.textContent.trim());
+    span.contentEditable = "true";
+    span.classList.add("editing"); // Add this line
+    span.focus();
+    // Move cursor to the end of the text
+    const range = document.createRange();
+    const selection = window.getSelection();
+    range.selectNodeContents(span);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    editBtn.innerHTML =
+      '<img src="/icons/done.svg" alt="Done" class="svg-icon">';
+    editBtn.classList.add("editing");
+
+    // Add event listener for the Enter key
+    span.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        saveEdit(span, editBtn, editBtn.dataset.id);
+      }
+    });
+  }
+
+  function saveEdit(span, editBtn, memoryId) {
+    const newContent = span.textContent.trim();
+    const originalContent = span.getAttribute("data-original-content");
+
+    // If the content hasn't changed, just revert the button without calling the API
+    if (newContent === originalContent) {
+      span.contentEditable = "false";
+      span.classList.remove("editing"); // Add this line
+      editBtn.innerHTML =
+        '<img src="/icons/edit.svg" alt="Edit" class="svg-icon">';
+      editBtn.classList.remove("editing");
+      return;
+    }
+
+    editMemory(memoryId, newContent, editBtn);
+    span.contentEditable = "false";
+    span.classList.remove("editing"); // Add this line to remove padding after editing
+  }
 
   function deleteMemory(memoryId) {
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
@@ -192,9 +257,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function editMemory(memoryId, newContent) {
+  function editMemory(memoryId, newContent, editBtn) {
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
       const headers = getHeaders(data.apiKey, data.access_token);
+
+      // Change the icon to the loading state
+      editBtn.innerHTML =
+        '<div class="loader-container"><div class="loader"></div></div>';
+      editBtn.disabled = true; // Disable the button while loading
+
       fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
         method: "PUT",
         headers: headers,
@@ -202,18 +273,27 @@ document.addEventListener("DOMContentLoaded", function () {
       })
         .then((response) => {
           if (response.ok) {
-            const editButton = document.querySelector(`[data-id="${memoryId}"]`).parentElement.querySelector('.edit-btn');
-            const originalContent = editButton.innerHTML;
-            editButton.innerHTML = '<img src="/icons/check.svg" alt="Updated" class="svg-icon">';
-            setTimeout(() => {
-              editButton.innerHTML = originalContent;
-            }, 500);
+            // Show the "check" icon briefly
+            editBtn.innerHTML =
+              '<img src="/icons/edit.svg" alt="Edit" class="svg-icon">';
+            editBtn.classList.remove("editing");
+            editBtn.disabled = false; // Re-enable the button
           } else {
             console.error("Failed to update memory");
+            // If update fails, revert to the "edit" icon
+            editBtn.innerHTML =
+              '<img src="/icons/edit.svg" alt="Edit" class="svg-icon">';
+            editBtn.classList.remove("editing");
+            editBtn.disabled = false; // Re-enable the button
           }
         })
         .catch((error) => {
           console.error("Error updating memory:", error);
+          // If there's an error, revert to the "edit" icon
+          editBtn.innerHTML =
+            '<img src="/icons/edit.svg" alt="Edit" class="svg-icon">';
+          editBtn.classList.remove("editing");
+          editBtn.disabled = false; // Re-enable the button
         });
     });
   }
@@ -228,7 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
     newMemoryInput.className = "memory-item new-memory";
     newMemoryInput.innerHTML = `
       <span contenteditable="true" placeholder="Enter new memory"></span>
-      <div class="memory-buttons">
+      <div class="new-memory-buttons memory-buttons">
         <button class="icon-button save-new-btn" title="Save">
           <img src="/icons/done.svg" alt="Save" class="svg-icon">
         </button>
@@ -253,6 +333,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Focus the new memory input
     newMemorySpan.focus();
 
+    // Add event listener for the Enter key
+    newMemorySpan.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        saveNewBtn.click();
+      }
+    });
+
     saveNewBtn.addEventListener("click", function () {
       const newContent = newMemorySpan.textContent.trim();
       if (newContent) {
@@ -271,16 +359,11 @@ document.addEventListener("DOMContentLoaded", function () {
               body: JSON.stringify({
                 messages: [{ role: "user", content: newContent }],
                 user_id: data.userId,
+                infer: false,
               }),
             })
               .then((response) => response.json())
               .then((data) => {
-                // Reset button state even on success
-                saveNewBtn.innerHTML =
-                  '<img src="/icons/done.svg" alt="Save" class="svg-icon">';
-                saveNewBtn.disabled = false;
-                cancelNewBtn.style.display = "block";
-
                 newMemoryInput.remove();
                 checkAuthAndFetchMemories(true); // Refresh the memories list
               })
@@ -294,6 +377,9 @@ document.addEventListener("DOMContentLoaded", function () {
               });
           }
         );
+      } else {
+        // If the textbox is empty, just close the add memory box
+        newMemoryInput.remove();
       }
     });
 
@@ -362,7 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 15px 15px 15px;
+      padding: 20px 10px 15px 15px;
     }
       .svg-icon {
     }
@@ -427,13 +513,15 @@ document.addEventListener("DOMContentLoaded", function () {
     .scroll-area {
       height: 400px;
       overflow-y: auto;
-      padding: 0px 10px;
+      padding: 0px 0px;
     }
     .memory-item {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: 10px 5px;
+      padding: 10px 10px 10px 15px;
+      border-bottom: 0.5px solid #e0e0e0;
+      transition: background-color 1s ease;
     }
     .memory-item span[contenteditable] {
       flex: 1;
@@ -441,12 +529,21 @@ document.addEventListener("DOMContentLoaded", function () {
       word-wrap: break-word;
       white-space: pre-wrap;
       max-width: 220px; /* Adjust this value as needed */
+      transition: padding 0.3s ease, border 0.3s ease; // Add smooth transition
+    }
+
+    .memory-item span[contenteditable].editing {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
     }
 
     .new-memory {
         display: flex;
-        padding: 0px 12px 15px 15px;
+        padding: 0px 10px 10px 15px;
         align-items: center;
+        
     }
 
     .new-memory span[contenteditable] {
@@ -455,6 +552,7 @@ document.addEventListener("DOMContentLoaded", function () {
       border-radius: 4px;
       min-height: 16px;
       outline: none;
+      margin-r
     }
 
     .new-memory span[contenteditable]:focus {
@@ -470,7 +568,11 @@ document.addEventListener("DOMContentLoaded", function () {
       display: flex;
       gap: 5px;
       margin-left: 10px;
-      align-self: flex-start;
+      align-self: flex-start; 
+    }
+
+    .new-memory-buttons {
+      margin-top: 3px;
     }
 
     .shortcut-info {
@@ -503,6 +605,49 @@ document.addEventListener("DOMContentLoaded", function () {
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      transition: filter 0.3s ease;
+    }
+
+    .icon-button:disabled {
+      cursor: default;
+    }
+
+    .loader-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .loader {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .memory-item.highlight {
+      background-color: #f0f0f0;
     }
   `;
   document.head.appendChild(style);
