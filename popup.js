@@ -126,6 +126,100 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add event listener for the new Open Dashboard button
     const openDashboardBtn = ellipsisMenu.querySelector("#openDashboardBtn");
     openDashboardBtn.addEventListener("click", openDashboard);
+
+    // Add event listener for the Add Memory button
+    const addMemoryBtn = header.querySelector("#addMemoryBtn");
+    addMemoryBtn.addEventListener("click", addNewMemory);
+  }
+
+  function addNewMemory() {
+    // Check if the new memory input already exists
+    if (document.querySelector(".new-memory")) {
+      return; // Exit the function if it already exists
+    }
+
+    const newMemoryInput = document.createElement("div");
+    newMemoryInput.className = "memory-item new-memory";
+    newMemoryInput.innerHTML = `
+      <span contenteditable="true" placeholder="Enter new memory"></span>
+      <div class="new-memory-buttons memory-buttons">
+        <button class="icon-button save-new-btn" title="Save">
+          <img src="/icons/done.svg" alt="Save" class="svg-icon">
+        </button>
+        <button class="icon-button cancel-new-btn" title="Cancel">
+          <img src="/icons/close.svg" alt="Cancel" class="svg-icon">
+        </button>
+      </div>
+    `;
+
+    const scrollArea = document.querySelector(".scroll-area");
+    if (scrollArea) {
+      scrollArea.insertBefore(newMemoryInput, scrollArea.firstChild);
+    } else {
+      console.error("Scroll area not found");
+      return;
+    }
+
+    const saveNewBtn = newMemoryInput.querySelector(".save-new-btn");
+    const cancelNewBtn = newMemoryInput.querySelector(".cancel-new-btn");
+    const newMemorySpan = newMemoryInput.querySelector("span");
+
+    // Focus the new memory input
+    newMemorySpan.focus();
+
+    // Add event listener for the Enter key
+    newMemorySpan.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        saveNewBtn.click();
+      }
+    });
+
+    saveNewBtn.addEventListener("click", function () {
+      const newContent = newMemorySpan.textContent.trim();
+      if (newContent) {
+        // Show loading indicator
+        saveNewBtn.innerHTML = '<div class="loader"></div>';
+        saveNewBtn.disabled = true;
+        cancelNewBtn.style.display = "none";
+
+        chrome.storage.sync.get(
+          ["apiKey", "access_token", "userId"],
+          function (data) {
+            const headers = getHeaders(data.apiKey, data.access_token);
+            fetch("https://api.mem0.ai/v1/memories/", {
+              method: "POST",
+              headers: headers,
+              body: JSON.stringify({
+                messages: [{ role: "user", content: newContent }],
+                user_id: data.userId,
+                infer: false,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                newMemoryInput.remove();
+                checkAuthAndFetchMemories(true); // Refresh the memories list
+              })
+              .catch((error) => {
+                console.error("Error adding memory:", error);
+                // Reset the save button if there's an error
+                saveNewBtn.innerHTML =
+                  '<img src="/icons/done.svg" alt="Save" class="svg-icon">';
+                saveNewBtn.disabled = false;
+                cancelNewBtn.style.display = "block";
+              });
+          }
+        );
+      } else {
+        // If the textbox is empty, just close the add memory box
+        newMemoryInput.remove();
+      }
+    });
+
+    cancelNewBtn.addEventListener("click", function () {
+      newMemoryInput.remove();
+    });
   }
 
   function fetchMemories(userId, apiKey, accessToken) {
@@ -328,96 +422,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
   }
-
-  addMemoryButton.addEventListener("click", function () {
-    // Check if the new memory input already exists
-    if (document.querySelector(".new-memory")) {
-      return; // Exit the function if it already exists
-    }
-
-    const newMemoryInput = document.createElement("div");
-    newMemoryInput.className = "memory-item new-memory";
-    newMemoryInput.innerHTML = `
-      <span contenteditable="true" placeholder="Enter new memory"></span>
-      <div class="new-memory-buttons memory-buttons">
-        <button class="icon-button save-new-btn" title="Save">
-          <img src="/icons/done.svg" alt="Save" class="svg-icon">
-        </button>
-        <button class="icon-button cancel-new-btn" title="Cancel">
-          <img src="/icons/close.svg" alt="Cancel" class="svg-icon">
-        </button>
-      </div>
-    `;
-
-    const scrollArea = document.querySelector(".scroll-area");
-    if (scrollArea) {
-      scrollArea.insertBefore(newMemoryInput, scrollArea.firstChild);
-    } else {
-      console.error("Scroll area not found");
-      return;
-    }
-
-    const saveNewBtn = newMemoryInput.querySelector(".save-new-btn");
-    const cancelNewBtn = newMemoryInput.querySelector(".cancel-new-btn");
-    const newMemorySpan = newMemoryInput.querySelector("span");
-
-    // Focus the new memory input
-    newMemorySpan.focus();
-
-    // Add event listener for the Enter key
-    newMemorySpan.addEventListener("keydown", function (event) {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        saveNewBtn.click();
-      }
-    });
-
-    saveNewBtn.addEventListener("click", function () {
-      const newContent = newMemorySpan.textContent.trim();
-      if (newContent) {
-        // Show loading indicator
-        saveNewBtn.innerHTML = '<div class="loader"></div>';
-        saveNewBtn.disabled = true;
-        cancelNewBtn.style.display = "none";
-
-        chrome.storage.sync.get(
-          ["apiKey", "access_token", "userId"],
-          function (data) {
-            const headers = getHeaders(data.apiKey, data.access_token);
-            fetch("https://api.mem0.ai/v1/memories/", {
-              method: "POST",
-              headers: headers,
-              body: JSON.stringify({
-                messages: [{ role: "user", content: newContent }],
-                user_id: data.userId,
-                infer: false,
-              }),
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                newMemoryInput.remove();
-                checkAuthAndFetchMemories(true); // Refresh the memories list
-              })
-              .catch((error) => {
-                console.error("Error adding memory:", error);
-                // Reset the save button if there's an error
-                saveNewBtn.innerHTML =
-                  '<img src="/icons/done.svg" alt="Save" class="svg-icon">';
-                saveNewBtn.disabled = false;
-                cancelNewBtn.style.display = "block";
-              });
-          }
-        );
-      } else {
-        // If the textbox is empty, just close the add memory box
-        newMemoryInput.remove();
-      }
-    });
-
-    cancelNewBtn.addEventListener("click", function () {
-      newMemoryInput.remove();
-    });
-  });
 
   function getHeaders(apiKey, accessToken) {
     const headers = {
