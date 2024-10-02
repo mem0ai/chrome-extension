@@ -240,7 +240,7 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
           query: message,
           user_id: userId,
           rerank: true,
-          threshold: 0.1,
+          threshold: 0.3,
           limit: 10
         })
       });
