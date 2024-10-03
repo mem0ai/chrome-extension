@@ -1,6 +1,6 @@
 # Mem0 Chrome Extension
 
-Mem0 Chrome Extension lets you own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc and get personalized, relevant responses.
+The Mem0 Chrome Extension allows you to manage your memory and preferences across various Gen AI applications such as ChatGPT, Claude, Perplexity, and more, providing you with personalized and relevant responses.
 
 <a href="https://chromewebstore.google.com/detail/claude-memory/onihkkbipkfeijkadecaafbgagkhglop?hl=en-GB&utm_source=ext_sidebar" style="display: inline-block; padding: 8px 12px; background-color: white; color: #3c4043; text-decoration: none; font-family: 'Roboto', Arial, sans-serif; font-size: 14px; font-weight: 500; border-radius: 4px; border: 1px solid #dadce0; box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);">
   <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome logo" style="height: 24px; vertical-align: middle; margin-right: 8px;">
