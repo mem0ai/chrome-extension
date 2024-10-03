@@ -214,13 +214,10 @@ async function handleMem0Click(popup, clickSendButton = false) {
                 ? inputElement.innerHTML
                 : inputElement.value;
 
-            const memInfoRegex =
-                /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
+            const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
             currentContent = currentContent.replace(memInfoRegex, "").trim();
-            const endIndex = currentContent.indexOf("</p>");
-            if (endIndex !== -1) {
-                currentContent = currentContent.slice(0, endIndex + 4);
-            }
+            const lastParagraphRegex = /<p><br class="ProseMirror-trailingBreak"><\/p><p>$/;
+            currentContent = currentContent.replace(lastParagraphRegex, "").trim();
 
             let memoriesContent =
                 '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
