@@ -191,7 +191,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
               query: message,
               user_id: userId,
               rerank: true,
-              threshold: 0.1,
+              threshold: 0.3,
               limit: 10,
             }),
           }

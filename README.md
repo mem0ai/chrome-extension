@@ -1,6 +1,6 @@
 # Mem0 Chrome Extension
 
-Mem0 Chrome Extension lets you own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc and get personalized, relevant responses.
+The Mem0 Chrome Extension allows you to manage your memory and preferences across various Gen AI applications such as ChatGPT, Claude, Perplexity, and more, providing you with personalized and relevant responses.
 
 <a href="https://chromewebstore.google.com/detail/claude-memory/onihkkbipkfeijkadecaafbgagkhglop?hl=en-GB&utm_source=ext_sidebar" style="display: inline-block; padding: 8px 12px; background-color: white; color: #3c4043; text-decoration: none; font-family: 'Roboto', Arial, sans-serif; font-size: 14px; font-weight: 500; border-radius: 4px; border: 1px solid #dadce0; box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);">
   <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome logo" style="height: 24px; vertical-align: middle; margin-right: 8px;">
@@ -14,7 +14,7 @@ Built using [Mem0](https://www.mem0.ai) ❤️
 
 ## Demo
 
-Check out this video of Claude Memory in action (full-resolution video available [here](https://youtu.be/4iP_ADT9N3E)):
+Check out this video of Mem0 Chrome Extension in action (full-resolution video available [here](https://youtu.be/4iP_ADT9N3E)):
 
 https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 
@@ -31,12 +31,12 @@ https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 2. Open Google Chrome and navigate to `chrome://extensions`.
 3. Enable "Developer mode" in the top right corner.
 4. Click "Load unpacked" and select the directory containing the extension files.
-5. The Claude Memory extension should now appear in your Chrome toolbar.
+5. The Mem0 Chrome Extension extension should now appear in your Chrome toolbar.
 
 
 ## Usage
 
-1. Click on the Claude Memory icon in your Chrome toolbar to open the popup.
+1. Click on the Mem0 Chrome Extension icon in your Chrome toolbar to open the popup.
 2. Enter your Mem0 API key and user ID in the settings.
 3. During conversations with Claude, click the "Mem0" button to retrieve relevant memories and use them in your conversations. This also tries to deduce new memories from your conversation.
 4. Your memories will be displayed, allowing you to reference them in your conversations.
@@ -57,11 +57,11 @@ If you encounter any issues:
 
 ## Privacy and Data Security
 
-Claude Memory stores your API key and user ID locally in your browser. Your messages are sent to the Mem0 API for extracting and retrieving memories.
+Mem0 Chrome Extension stores your API key and user ID locally in your browser. Your messages are sent to the Mem0 API for extracting and retrieving memories.
 
 ## Contributing
 
-Contributions to improve Claude Memory are welcome. Please feel free to submit pull requests or open issues for bugs and feature requests.
+Contributions to improve Mem0 Chrome Extension are welcome. Please feel free to submit pull requests or open issues for bugs and feature requests.
 
 ## License
 MIT License
