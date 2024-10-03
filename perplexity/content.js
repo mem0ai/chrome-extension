@@ -1,139 +1,144 @@
 let isProcessingMem0 = false;
 
 function addMem0Button() {
-  const submitButton = document.querySelector('button[aria-label="Submit"]');
-  if (!submitButton) {
+  const submitButtons = document.querySelectorAll('button[aria-label="Submit"]');
+  if (submitButtons.length === 0) {
     setTimeout(addMem0Button, 500);
     return;
   }
 
-  const targetDiv = submitButton.parentElement;
+  submitButtons.forEach(submitButton => {
+    const targetDiv = submitButton.parentElement;
+    const proButtonContainer = targetDiv.querySelector('.group\\/switch');
 
-  if (targetDiv && !document.querySelector("#mem0-button-container")) {
-    // Create a new container for the mem0 button
-    const mem0ButtonContainer = document.createElement("div");
-    mem0ButtonContainer.id = "mem0-button-container";
-    mem0ButtonContainer.style.cssText = `
-            display: inline-flex;
-            align-items: center;
-            margin-right: ${
-              window.location.href.startsWith(
-                "https://www.perplexity.ai/search"
-              )
-                ? "19px"
-                : "0px"
-            };
-            position: relative;
-        `;
+    if (targetDiv && !targetDiv.querySelector("#mem0-button-container")) {
+      // Create a new container for the mem0 button
+      const mem0ButtonContainer = document.createElement("div");
+      mem0ButtonContainer.id = "mem0-button-container";
+      mem0ButtonContainer.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        margin-right: 8px;
+        position: relative;
+      `;
 
-    // Create the mem0 button
-    const mem0Button = document.createElement("img");
-    mem0Button.id = "mem0-button";
-    mem0Button.src = chrome.runtime.getURL("icons/mem0-claude-icon-purple.png");
-    mem0Button.style.cssText = `
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            padding: 11px;
-            border-radius: 9px;
-            transition: filter 0.3s ease, opacity 0.3s ease;
-            box-sizing: content-box;
-        `;
+      // Create the mem0 button
+      const mem0Button = document.createElement("img");
+      mem0Button.id = "mem0-button";
+      mem0Button.src = chrome.runtime.getURL("icons/mem0-claude-icon-purple.png");
+      mem0Button.style.cssText = `
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        padding: 11px;
+        border-radius: 9px;
+        transition: filter 0.3s ease, opacity 0.3s ease;
+        box-sizing: content-box;
+      `;
 
-    // Create default tooltip (below the button)
-    const defaultTooltip = document.createElement("div");
-    defaultTooltip.textContent = "Add related memories";
-    defaultTooltip.style.cssText = `
-            visibility: hidden;
-            position: absolute;
-            background-color: #2d2f2f;
-            color: white;
-            text-align: center;
-            border-radius: 4px;
-            padding: 5px 8px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-            z-index: 1000;
-            top: -80%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-top: 5px;
-        `;
+      // Create default tooltip (below the button)
+      const defaultTooltip = document.createElement("div");
+      defaultTooltip.textContent = "Add related memories";
+      defaultTooltip.style.cssText = `
+        visibility: hidden;
+        position: absolute;
+        background-color: #2d2f2f;
+        color: white;
+        text-align: center;
+        border-radius: 4px;
+        padding: 5px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        z-index: 1000;
+        top: -80%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 5px;
+      `;
 
-    // Create message tooltip (above the button)
-    const messageTooltip = document.createElement("div");
-    messageTooltip.style.cssText = `
-            visibility: hidden;
-            position: absolute;
-            background-color: #191a1a;
-            color: white;
-            text-align: center;
-            border-radius: 6px;
-            padding: 6px 8px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-            z-index: 1000;
-            top: 50%;
-            left: -140px;
-            transform: translateY(-50%);
-            margin-right: 5px;
-        `;
+      // Create message tooltip (above the button)
+      const messageTooltip = document.createElement("div");
+      messageTooltip.style.cssText = `
+        visibility: hidden;
+        position: absolute;
+        background-color: #191a1a;
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        z-index: 1000;
+        top: 50%;
+        left: -140px;
+        transform: translateY(-50%);
+        margin-right: 5px;
+      `;
 
-    mem0ButtonContainer.appendChild(mem0Button);
-    mem0ButtonContainer.appendChild(defaultTooltip);
-    mem0ButtonContainer.appendChild(messageTooltip);
+      mem0ButtonContainer.appendChild(mem0Button);
+      mem0ButtonContainer.appendChild(defaultTooltip);
+      mem0ButtonContainer.appendChild(messageTooltip);
 
-    // Insert the mem0ButtonContainer as the first child of the target div
-    targetDiv.insertBefore(mem0ButtonContainer, targetDiv.firstChild);
-
-    // Event listeners
-    mem0Button.addEventListener("click", () =>
-      handleMem0Click(defaultTooltip, messageTooltip)
-    );
-
-    mem0Button.addEventListener("mouseenter", () => {
-      if (!mem0Button.disabled) {
-        mem0Button.style.filter = "brightness(70%)";
-        showTooltip(defaultTooltip);
+      // Insert the mem0ButtonContainer before the Pro button
+      if (proButtonContainer) {
+        proButtonContainer.parentElement.insertBefore(mem0ButtonContainer, proButtonContainer);
+      } else {
+        // If Pro button is not found, insert before the submit button
+        targetDiv.insertBefore(mem0ButtonContainer, submitButton);
       }
-    });
 
-    mem0Button.addEventListener("mouseleave", () => {
-      mem0Button.style.filter = "none";
-      hideTooltip(defaultTooltip);
-    });
+      // Event listeners
+      mem0Button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!mem0Button.disabled) {
+          handleMem0Click(defaultTooltip, messageTooltip);
+        }
+      });
 
-    // Function to update button states
-    function updateButtonStates() {
-      const inputElement =
-        document.querySelector("textarea") ||
-        document.querySelector('input[type="text"]') ||
-        document.querySelector('div[contenteditable="true"]');
-      const hasText =
-        inputElement &&
-        (inputElement.value || inputElement.textContent).trim().length > 0;
+      mem0Button.addEventListener("mouseenter", () => {
+        if (!mem0Button.disabled) {
+          mem0Button.style.filter = "brightness(70%)";
+          showTooltip(defaultTooltip);
+        }
+      });
 
-      mem0Button.disabled = !hasText;
-      mem0Button.style.opacity = hasText ? "1" : "0.5";
-      mem0Button.style.pointerEvents = hasText ? "auto" : "none";
+      mem0Button.addEventListener("mouseleave", () => {
+        mem0Button.style.filter = "none";
+        hideTooltip(defaultTooltip);
+      });
+
+      // Function to update button states
+      function updateButtonStates() {
+        const isSubmitEnabled = !submitButton.disabled;
+        mem0Button.disabled = !isSubmitEnabled;
+        mem0Button.style.opacity = isSubmitEnabled ? "1" : "0.5";
+        mem0Button.style.pointerEvents = isSubmitEnabled ? "auto" : "none";
+      }
+
+      // Initial update
+      updateButtonStates();
+
+      // Create a MutationObserver to watch for changes in the submit button's disabled attribute
+      const observer = new MutationObserver(updateButtonStates);
+      observer.observe(submitButton, { attributes: true, attributeFilter: ['disabled'] });
+
+      // Clean up the observer when the mem0 button is removed
+      const cleanupObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' && !document.body.contains(mem0ButtonContainer)) {
+            observer.disconnect();
+            cleanupObserver.disconnect();
+          }
+        });
+      });
+      cleanupObserver.observe(document.body, { childList: true, subtree: true });
     }
-
-    // Initial update
-    updateButtonStates();
-
-    // Listen for input changes
-    const inputElement =
-      document.querySelector("textarea") ||
-      document.querySelector('input[type="text"]') ||
-      document.querySelector('div[contenteditable="true"]');
-    if (inputElement) {
-      inputElement.addEventListener("input", updateButtonStates);
-    }
-  }
+  });
 }
 
 function setButtonLoadingState(isLoading) {
@@ -174,10 +179,11 @@ function hideTooltip(tooltip) {
 }
 
 async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton = false) {
-  const inputElement =
-    document.querySelector('div[contenteditable="true"]') ||
-    document.querySelector("textarea");
-  let message = getInputValue();
+  console.log("handleMem0Click called");
+  const inputElement = getInputElement();
+  console.log("Input element:", inputElement);
+  let message = getInputValue(inputElement);
+  console.log("Message:", message);
   setButtonLoadingState(true);
   if (!message) {
     console.error("No input message found");
@@ -258,13 +264,9 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
 
         if (memories.length > 0) {
           // Prepare the memories content
-          let currentContent =
-            inputElement.tagName.toLowerCase() === "div"
-              ? inputElement.innerHTML
-              : inputElement.value;
+          let currentContent = getInputValue(inputElement);
 
-          const memInfoRegex =
-            /\s*Here is some more information about me:[\s\S]*$/;
+          const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
           currentContent = currentContent.replace(memInfoRegex, "").trim();
 
           let memoriesContent = "\n\nHere is some more information about me:\n";
@@ -276,15 +278,22 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
           });
 
           // Insert the memories into the input field
-          if (inputElement.tagName.toLowerCase() === "div") {
-            // For contenteditable div
-            inputElement.innerHTML = currentContent + memoriesContent;
-          } else {
-            // For textarea
-            inputElement.value = currentContent + memoriesContent;
-          }
-          inputElement.dispatchEvent(new Event("input", { bubbles: true }));
+          setInputValue(inputElement, currentContent + memoriesContent);
           setButtonLoadingState(false);
+
+          if (clickSendButton) {
+            const sendButton = inputElement.closest('[data-testid="quick-search-modal"]')
+              ? inputElement.closest('[data-testid="quick-search-modal"]').querySelector('button[aria-label="Submit"]')
+              : document.querySelector('button[aria-label="Submit"]');
+
+            if (sendButton) {
+              setTimeout(() => {
+                sendButton.click();
+              }, 100);
+            } else {
+              console.error("Send button not found");
+            }
+          }
         } else {
           showTooltip(messageTooltip, "No memories found");
           setTimeout(() => hideTooltip(messageTooltip), 2000);
@@ -293,17 +302,6 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
       }
       setTimeout(() => hideTooltip(messageTooltip), 2000);
       setButtonLoadingState(false);
-
-      if (clickSendButton) {
-        const sendButton = document.querySelector('button[aria-label="Submit"]');
-          if (sendButton) {
-              setTimeout(() => {
-                sendButton.click();
-              }, 100);
-          } else {
-              console.error("Send button not found");
-          }
-        }
 
       // New add memory API call (non-blocking)
       fetch('https://api.mem0.ai/v1/memories/', {
@@ -368,11 +366,65 @@ function getLastMessages(count) {
   return messages;
 }
 
-function getInputValue() {
-  const inputElement =
-    document.querySelector('div[contenteditable="true"]') ||
-    document.querySelector("textarea");
-  return inputElement ? inputElement.textContent || inputElement.value : null;
+function getInputElement() {
+  const elements = [
+    document.querySelector('[data-testid="quick-search-modal"] textarea'),
+    document.querySelector('.col-start-1.col-end-4 textarea'),
+    document.querySelector('div[contenteditable="true"]'),
+    document.querySelector("textarea")
+  ];
+  const element = elements.find(el => el !== null);
+  return element;
+}
+
+function getInputValue(inputElement) {
+  if (!inputElement) {
+    console.log("No input element found");
+    return null;
+  }
+  
+  let value;
+  if (inputElement.tagName.toLowerCase() === 'div') {
+    value = inputElement.textContent;
+  } else if (inputElement.tagName.toLowerCase() === 'textarea') {
+    value = inputElement.value;
+    
+    // If the textarea is empty, check for the invisible span
+    if (!value) {
+      const parentDiv = inputElement.closest('.col-start-1.col-end-4');
+      if (parentDiv) {
+        const invisibleSpan = parentDiv.querySelector('span.invisible');
+        if (invisibleSpan) {
+          value = invisibleSpan.textContent;
+        }
+      }
+    }
+  }
+  
+  console.log("Input value:", value);
+  return value;
+}
+
+function setInputValue(inputElement, value) {
+  if (!inputElement) return;
+
+  if (inputElement.tagName.toLowerCase() === 'div') {
+    inputElement.textContent = value;
+  } else if (inputElement.tagName.toLowerCase() === 'textarea') {
+    inputElement.value = value;
+    
+    // For quick-search-modal, we need to update the associated span
+    const parentDiv = inputElement.closest('.col-start-1.col-end-4');
+    if (parentDiv) {
+      const invisibleSpan = parentDiv.querySelector('span.invisible');
+      if (invisibleSpan) {
+        invisibleSpan.textContent = value;
+      }
+    }
+  }
+
+  // Trigger input event to update any associated UI
+  inputElement.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 function initializeMem0Integration() {
@@ -381,9 +433,7 @@ function initializeMem0Integration() {
   });
 
   document.addEventListener("keydown", (event) => {
-    console.log("clicked");
     if (event.ctrlKey && event.key === "m") {
-      console.log("desired");
       event.preventDefault();
       const defaultTooltip = document.querySelector(
         "#mem0-button-container > div:nth-child(2)"
@@ -391,9 +441,7 @@ function initializeMem0Integration() {
       const messageTooltip = document.querySelector(
         "#mem0-button-container > div:nth-child(3)"
       );
-      (async () => {
-        await handleMem0Click(defaultTooltip, messageTooltip, true);
-      })();
+      handleMem0Click(defaultTooltip, messageTooltip, true);
     }
   });
 
