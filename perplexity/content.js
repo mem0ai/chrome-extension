@@ -1,15 +1,17 @@
 let isProcessingMem0 = false;
 
 function addMem0Button() {
-  const submitButtons = document.querySelectorAll('button[aria-label="Submit"]');
+  const submitButtons = document.querySelectorAll(
+    'button[aria-label="Submit"]'
+  );
   if (submitButtons.length === 0) {
     setTimeout(addMem0Button, 500);
     return;
   }
 
-  submitButtons.forEach(submitButton => {
+  submitButtons.forEach((submitButton) => {
     const targetDiv = submitButton.parentElement;
-    const proButtonContainer = targetDiv.querySelector('.group\\/switch');
+    const proButtonContainer = targetDiv.querySelector(".group\\/switch");
 
     if (targetDiv && !targetDiv.querySelector("#mem0-button-container")) {
       // Create a new container for the mem0 button
@@ -25,7 +27,9 @@ function addMem0Button() {
       // Create the mem0 button
       const mem0Button = document.createElement("img");
       mem0Button.id = "mem0-button";
-      mem0Button.src = chrome.runtime.getURL("icons/mem0-claude-icon-purple.png");
+      mem0Button.src = chrome.runtime.getURL(
+        "icons/mem0-claude-icon-purple.png"
+      );
       mem0Button.style.cssText = `
         width: 18px;
         height: 18px;
@@ -85,7 +89,10 @@ function addMem0Button() {
 
       // Insert the mem0ButtonContainer before the Pro button
       if (proButtonContainer) {
-        proButtonContainer.parentElement.insertBefore(mem0ButtonContainer, proButtonContainer);
+        proButtonContainer.parentElement.insertBefore(
+          mem0ButtonContainer,
+          proButtonContainer
+        );
       } else {
         // If Pro button is not found, insert before the submit button
         targetDiv.insertBefore(mem0ButtonContainer, submitButton);
@@ -125,18 +132,27 @@ function addMem0Button() {
 
       // Create a MutationObserver to watch for changes in the submit button's disabled attribute
       const observer = new MutationObserver(updateButtonStates);
-      observer.observe(submitButton, { attributes: true, attributeFilter: ['disabled'] });
+      observer.observe(submitButton, {
+        attributes: true,
+        attributeFilter: ["disabled"],
+      });
 
       // Clean up the observer when the mem0 button is removed
       const cleanupObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' && !document.body.contains(mem0ButtonContainer)) {
+          if (
+            mutation.type === "childList" &&
+            !document.body.contains(mem0ButtonContainer)
+          ) {
             observer.disconnect();
             cleanupObserver.disconnect();
           }
         });
       });
-      cleanupObserver.observe(document.body, { childList: true, subtree: true });
+      cleanupObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
     }
   });
 }
@@ -178,7 +194,11 @@ function hideTooltip(tooltip) {
   tooltip.style.opacity = "0";
 }
 
-async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton = false) {
+async function handleMem0Click(
+  defaultTooltip,
+  messageTooltip,
+  clickSendButton = false
+) {
   console.log("handleMem0Click called");
   const inputElement = getInputElement();
   console.log("Input element:", inputElement);
@@ -221,108 +241,119 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
     const userId = data.userId || "perplexity-user";
     const accessToken = data.access_token;
 
-      if (!apiKey && !accessToken) {
-        showTooltip(messageTooltip, 'No API Key or Access Token found');
-        setTimeout(() => hideTooltip(messageTooltip), 2000);
-        isProcessingMem0 = false;
-        setButtonLoadingState(false);
-        return;
-      }
+    if (!apiKey && !accessToken) {
+      showTooltip(messageTooltip, "No API Key or Access Token found");
+      setTimeout(() => hideTooltip(messageTooltip), 2000);
+      isProcessingMem0 = false;
+      setButtonLoadingState(false);
+      return;
+    }
 
-      const authHeader = accessToken ? `Bearer ${accessToken}` : `Token ${apiKey}`;
+    const authHeader = accessToken
+      ? `Bearer ${accessToken}`
+      : `Token ${apiKey}`;
 
-      const messages = getLastMessages(2);
-      messages.push({ role: "user", content: message });
-      console.log(messages);
+    const messages = [];
+    messages.push({ role: "user", content: message });
+    console.log(messages);
 
-      // Existing search API call
-      const searchResponse = await fetch('https://api.mem0.ai/v1/memories/search/', {
-        method: 'POST',
+    // Existing search API call
+    const searchResponse = await fetch(
+      "https://api.mem0.ai/v1/memories/search/",
+      {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader
+          "Content-Type": "application/json",
+          Authorization: authHeader,
         },
         body: JSON.stringify({
           query: message,
           user_id: userId,
           rerank: true,
           threshold: 0.3,
-          limit: 10
-        })
-      });
-
-      if (!searchResponse.ok) {
-        throw new Error(
-          `API request failed with status ${searchResponse.status}`
-        );
+          limit: 10,
+        }),
       }
+    );
 
-      const responseData = await searchResponse.json();
+    if (!searchResponse.ok) {
+      throw new Error(
+        `API request failed with status ${searchResponse.status}`
+      );
+    }
 
-      if (inputElement) {
-        const memories = responseData.map((item) => item.memory);
+    const responseData = await searchResponse.json();
 
-        if (memories.length > 0) {
-          // Prepare the memories content
-          let currentContent = getInputValue(inputElement);
+    if (inputElement) {
+      const memories = responseData.map((item) => item.memory);
 
-          const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
-          currentContent = currentContent.replace(memInfoRegex, "").trim();
+      if (memories.length > 0) {
+        // Prepare the memories content
+        let currentContent = getInputValue(inputElement);
 
-          let memoriesContent = "\n\nHere is some more information about me:\n";
-          memories.forEach((mem, index) => {
-            memoriesContent += `- ${mem}`;
-            if (index < memories.length - 1) {
-              memoriesContent += "\n";
-            }
-          });
+        const memInfoRegex =
+          /\s*Here is some more information about me:[\s\S]*$/;
+        currentContent = currentContent.replace(memInfoRegex, "").trim();
 
-          // Insert the memories into the input field
-          setInputValue(inputElement, currentContent + memoriesContent);
-          setButtonLoadingState(false);
-
-          if (clickSendButton) {
-            const sendButton = inputElement.closest('[data-testid="quick-search-modal"]')
-              ? inputElement.closest('[data-testid="quick-search-modal"]').querySelector('button[aria-label="Submit"]')
-              : document.querySelector('button[aria-label="Submit"]');
-
-            if (sendButton) {
-              setTimeout(() => {
-                sendButton.click();
-              }, 100);
-            } else {
-              console.error("Send button not found");
-            }
+        let memoriesContent = "\n\nHere is some more information about me:\n";
+        memories.forEach((mem, index) => {
+          memoriesContent += `- ${mem}`;
+          if (index < memories.length - 1) {
+            memoriesContent += "\n";
           }
-        } else {
-          showTooltip(messageTooltip, "No memories found");
-          setTimeout(() => hideTooltip(messageTooltip), 2000);
-          setButtonLoadingState(false);
+        });
+
+        // Insert the memories into the input field
+        setInputValue(inputElement, currentContent + memoriesContent);
+        setButtonLoadingState(false);
+
+        if (clickSendButton) {
+          const sendButton = inputElement.closest(
+            '[data-testid="quick-search-modal"]'
+          )
+            ? inputElement
+                .closest('[data-testid="quick-search-modal"]')
+                .querySelector('button[aria-label="Submit"]')
+            : document.querySelector('button[aria-label="Submit"]');
+
+          if (sendButton) {
+            setTimeout(() => {
+              sendButton.click();
+            }, 100);
+          } else {
+            console.error("Send button not found");
+          }
         }
+      } else {
+        showTooltip(messageTooltip, "No memories found");
+        setTimeout(() => hideTooltip(messageTooltip), 2000);
+        setButtonLoadingState(false);
       }
-      setTimeout(() => hideTooltip(messageTooltip), 2000);
-      setButtonLoadingState(false);
+    }
+    setTimeout(() => hideTooltip(messageTooltip), 2000);
+    setButtonLoadingState(false);
 
-      // New add memory API call (non-blocking)
-      fetch('https://api.mem0.ai/v1/memories/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader
-        },
-        body: JSON.stringify({
-          messages: messages,
-          user_id: userId,
-          infer: true
-        })
-      }).then(response => {
+    // New add memory API call (non-blocking)
+    fetch("https://api.mem0.ai/v1/memories/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        user_id: userId,
+        infer: true,
+      }),
+    })
+      .then((response) => {
         if (!response.ok) {
-          console.error('Failed to add memory:', response.status);
+          console.error("Failed to add memory:", response.status);
         }
-      }).catch(error => {
-        console.error('Error adding memory:', error);
+      })
+      .catch((error) => {
+        console.error("Error adding memory:", error);
       });
-
   } catch (error) {
     console.error("Error:", error);
     setButtonLoadingState(false);
@@ -331,49 +362,14 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
   }
 }
 
-function getLastMessages(count) {
-  const messages = [];
-
-  const questionElements = Array.from(
-    document.querySelectorAll(".my-md.md\\:my-lg")
-  ).reverse();
-  const answerElements = Array.from(
-    document.querySelectorAll(".mb-md")
-  ).reverse();
-
-  const combinedElements = [];
-  for (
-    let i = 0;
-    i < Math.max(questionElements.length, answerElements.length);
-    i++
-  ) {
-    if (i < questionElements.length) combinedElements.push(questionElements[i]);
-    if (i < answerElements.length) combinedElements.push(answerElements[i]);
-  }
-
-  for (const element of combinedElements) {
-    if (messages.length >= count) break;
-
-    if (element.classList.contains("my-md")) {
-      const content = element.textContent.trim();
-      messages.push({ role: "user", content });
-    } else if (element.classList.contains("mb-md")) {
-      const content = element.textContent.trim();
-      messages.push({ role: "assistant", content });
-    }
-  }
-
-  return messages;
-}
-
 function getInputElement() {
   const elements = [
     document.querySelector('[data-testid="quick-search-modal"] textarea'),
-    document.querySelector('.col-start-1.col-end-4 textarea'),
+    document.querySelector(".col-start-1.col-end-4 textarea"),
     document.querySelector('div[contenteditable="true"]'),
-    document.querySelector("textarea")
+    document.querySelector("textarea"),
   ];
-  const element = elements.find(el => el !== null);
+  const element = elements.find((el) => el !== null);
   return element;
 }
 
@@ -382,25 +378,25 @@ function getInputValue(inputElement) {
     console.log("No input element found");
     return null;
   }
-  
+
   let value;
-  if (inputElement.tagName.toLowerCase() === 'div') {
+  if (inputElement.tagName.toLowerCase() === "div") {
     value = inputElement.textContent;
-  } else if (inputElement.tagName.toLowerCase() === 'textarea') {
+  } else if (inputElement.tagName.toLowerCase() === "textarea") {
     value = inputElement.value;
-    
+
     // If the textarea is empty, check for the invisible span
     if (!value) {
-      const parentDiv = inputElement.closest('.col-start-1.col-end-4');
+      const parentDiv = inputElement.closest(".col-start-1.col-end-4");
       if (parentDiv) {
-        const invisibleSpan = parentDiv.querySelector('span.invisible');
+        const invisibleSpan = parentDiv.querySelector("span.invisible");
         if (invisibleSpan) {
           value = invisibleSpan.textContent;
         }
       }
     }
   }
-  
+
   console.log("Input value:", value);
   return value;
 }
@@ -408,15 +404,15 @@ function getInputValue(inputElement) {
 function setInputValue(inputElement, value) {
   if (!inputElement) return;
 
-  if (inputElement.tagName.toLowerCase() === 'div') {
+  if (inputElement.tagName.toLowerCase() === "div") {
     inputElement.textContent = value;
-  } else if (inputElement.tagName.toLowerCase() === 'textarea') {
+  } else if (inputElement.tagName.toLowerCase() === "textarea") {
     inputElement.value = value;
-    
+
     // For quick-search-modal, we need to update the associated span
-    const parentDiv = inputElement.closest('.col-start-1.col-end-4');
+    const parentDiv = inputElement.closest(".col-start-1.col-end-4");
     if (parentDiv) {
-      const invisibleSpan = parentDiv.querySelector('span.invisible');
+      const invisibleSpan = parentDiv.querySelector("span.invisible");
       if (invisibleSpan) {
         invisibleSpan.textContent = value;
       }
@@ -424,7 +420,7 @@ function setInputValue(inputElement, value) {
   }
 
   // Trigger input event to update any associated UI
-  inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+  inputElement.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function initializeMem0Integration() {

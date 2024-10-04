@@ -1,51 +1,50 @@
 {
-    "manifest_version": 3,
-    "name": "Mem0",
-    "version": "1.3.1",
-    "description": "Own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc & get personalized, relevant responses.",
-    "icons": {
-        "16": "icons/icon16.png",
-        "48": "icons/icon48.png",
-        "128": "icons/icon128.png"
+  "manifest_version": 3,
+  "name": "Mem0",
+  "version": "1.3.1",
+  "description": "Own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc & get personalized, relevant responses.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["https://api.mem0.ai/*", "https://app.mem0.ai/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["claude/content.js"]
     },
-    "permissions": [
-        "storage",
-        "tabs"
-    ],
-    "host_permissions": [
-        "https://api.mem0.ai/*",
-        "https://app.mem0.ai/*"
-    ],
-    "action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "icons/icon16.png",
-            "48": "icons/icon48.png",
-            "128": "icons/icon128.png"
-        }
+    {
+      "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+      "js": ["chatgpt/content.js"]
     },
-    "content_scripts": [
-        {
-            "matches": ["https://claude.ai/*"],
-            "js": ["claude/content.js"]
-        },
-        {
-            "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
-            "js": ["chatgpt/content.js"]
-        },
-        {
-            "matches": ["https://www.perplexity.ai/*"],
-            "js": ["perplexity/content.js"]
-        },
-        {
-            "matches": ["https://app.mem0.ai/*"],
-            "js": ["mem0/content.js"]
-        }
-    ],
-    "web_accessible_resources": [
-        {
-            "resources": ["icons/*.png"],
-            "matches": ["<all_urls>"]
-        }
-    ]
+    {
+      "matches": ["https://www.perplexity.ai/*"],
+      "js": ["perplexity/content.js"]
+    },
+    {
+      "matches": ["https://app.mem0.ai/*"],
+      "js": ["mem0/content.js"]
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["sidebar.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

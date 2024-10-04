@@ -46,31 +46,34 @@ document.addEventListener("DOMContentLoaded", function () {
     settingsContainer.style.display = "none";
     memoriesContainer.style.display = "flex";
     memoriesContainer.style.flexDirection = "column";
-    memoriesContainer.style.width = "300px";
+    memoriesContainer.style.width = "400px";
+    memoriesContainer.style.height = "800px";
+    document.body.style.backgroundColor = "transparent";
+    memoriesContainer.style.backgroundColor = "#ffffff";
+    memoriesContainer.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
 
-    // Create header
-    const header = document.createElement("div");
-    header.className = "header";
-    header.innerHTML = `
-      <div class="logo-container">
-        <img src="icons/mem0-logo.png" alt="Mem0 Logo" class="logo">
-      </div>
-      <div class="header-buttons">
-        <!-- New search button -->
-        <button id="searchBtn" class="header-icon-button" title="Search Memories">
-          <img src="icons/search.svg" alt="Search" class="svg-icon">
-        </button>
-        <!-- Add memory button -->
-        <button id="addMemoryBtn" class="header-icon-button" title="Add Memory">
-          <img src="icons/add.svg" alt="Add Memory" class="svg-icon">
-        </button>
-        <!-- New ellipsis menu button -->
-        <button id="ellipsisMenuBtn" class="header-icon-button" title="More options">
-          <img src="icons/ellipsis.svg" alt="More options" class="svg-icon">
-        </button>
+    // Create fixed header
+    const fixedHeader = document.createElement("div");
+    fixedHeader.className = "fixed-header";
+    fixedHeader.innerHTML = `
+      <div class="header">
+        <div class="logo-container">
+          <img src="icons/mem0-logo.png" alt="Mem0 Logo" class="logo">
+        </div>
+        <div class="header-buttons">
+          <button id="searchBtn" class="header-icon-button" title="Search Memories">
+            <img src="icons/search.svg" alt="Search" class="svg-icon">
+          </button>
+          <button id="addMemoryBtn" class="header-icon-button" title="Add Memory">
+            <img src="icons/add.svg" alt="Add Memory" class="svg-icon">
+          </button>
+          <button id="ellipsisMenuBtn" class="header-icon-button" title="More options">
+            <img src="icons/ellipsis.svg" alt="More options" class="svg-icon">
+          </button>
+        </div>
       </div>
     `;
-    memoriesContainer.appendChild(header);
+    memoriesContainer.appendChild(fixedHeader);
 
     // Create ellipsis menu
     const ellipsisMenu = document.createElement("div");
@@ -80,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
       <button id="openDashboardBtn">Open Dashboard</button>
       <button id="logoutBtn">Logout</button>
     `;
-    memoriesContainer.appendChild(ellipsisMenu);
+    fixedHeader.appendChild(ellipsisMenu);
 
     // Create scroll area with loading indicator
     const scrollArea = document.createElement("div");
@@ -93,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     memoriesContainer.appendChild(scrollArea);
 
-    // Create shortcut info
+    // Create shortcut info and append it after the scroll area
     const shortcutInfo = document.createElement("div");
     shortcutInfo.className = "shortcut-info";
     shortcutInfo.innerHTML = `
@@ -112,11 +115,11 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     memoriesContainer.appendChild(shortcutInfo);
 
-    const searchBtn = header.querySelector("#searchBtn");
+    const searchBtn = fixedHeader.querySelector("#searchBtn");
     searchBtn.addEventListener("click", toggleSearch);
 
     // Add event listener for ellipsis menu button
-    const ellipsisMenuBtn = header.querySelector("#ellipsisMenuBtn");
+    const ellipsisMenuBtn = fixedHeader.querySelector("#ellipsisMenuBtn");
     ellipsisMenuBtn.addEventListener("click", toggleEllipsisMenu);
 
     // Add event listener for logout button
@@ -128,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
     openDashboardBtn.addEventListener("click", openDashboard);
 
     // Add event listener for the Add Memory button
-    const addMemoryBtn = header.querySelector("#addMemoryBtn");
+    const addMemoryBtn = fixedHeader.querySelector("#addMemoryBtn");
     addMemoryBtn.addEventListener("click", addNewMemory);
   }
 
@@ -258,15 +261,46 @@ document.addEventListener("DOMContentLoaded", function () {
       memories.forEach((memoryItem) => {
         const memoryElement = document.createElement("div");
         memoryElement.className = "memory-item";
+
+        // Format the date
+        const createdAt = new Date(memoryItem.created_at);
+        const formattedDate = createdAt.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+
+        // Combine categories
+        const allCategories = [
+          ...(memoryItem.categories || []),
+          ...(memoryItem.custom_categories || []),
+        ];
+        const categoryHtml =
+          allCategories.length > 0
+            ? `<div class="categories">${allCategories
+                .map((cat) => `<span class="category">${cat}</span>`)
+                .join("")}</div>`
+            : "";
+
         memoryElement.innerHTML = `
-          <span>${memoryItem.memory}</span>
-          <div class="memory-buttons">
-            <button class="icon-button edit-btn" data-id="${memoryItem.id}">
-              <img src="/icons/edit.svg" alt="Edit" class="svg-icon">
-            </button>
-            <button class="icon-button delete-btn" data-id="${memoryItem.id}">
-              <img src="/icons/delete.svg" alt="Delete" class="svg-icon">
-            </button>
+          <div class="memory-content">
+            <div class="memory-top">
+              <span class="memory-text">${memoryItem.memory}</span>
+              <div class="memory-buttons">
+                <button class="icon-button edit-btn" data-id="${memoryItem.id}">
+                  <img src="/icons/edit.svg" alt="Edit" class="svg-icon">
+                </button>
+                <button class="icon-button delete-btn" data-id="${memoryItem.id}">
+                  <img src="/icons/delete.svg" alt="Delete" class="svg-icon">
+                </button>
+              </div>
+            </div>
+            <div class="memory-bottom">
+              <div class="memory-categories">
+                ${categoryHtml}
+              </div>
+              <div class="memory-date">${formattedDate}</div>
+            </div>
           </div>
         `;
         scrollArea.appendChild(memoryElement);
@@ -585,13 +619,63 @@ document.addEventListener("DOMContentLoaded", function () {
   // Update the CSS styles
   const style = document.createElement("style");
   style.textContent = `
+    .memoriesContainer {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      background-color: #ffffff;
+      z-index: 1000;
+    }
+
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 20px 10px 10px 15px;
     }
-      .svg-icon {
+
+    .scroll-area {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .shortcut-info {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      padding: 6px;
+      font-size: 12px;
+      color: #666;
+      background-color: #f5f5f5;
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .ellipsis-menu {
+      position: absolute;
+      top: 100%;
+      right: 10px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 1001;
+      width: 140px;
+    }
+
+    .svg-icon {
     }
     .logo-container {
       display: fixed;
@@ -651,33 +735,39 @@ document.addEventListener("DOMContentLoaded", function () {
       filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(80%) contrast(100%);
     }
 
-    .scroll-area {
-      height: 400px;
-      overflow-y: auto;
-      padding: 0px 0px;
-    }
     .memory-item {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 10px 10px 10px 15px;
-      border-bottom: 0.5px solid #e0e0e0;
-      transition: background-color 1s ease;
+      flex-direction: column;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .memory-item:hover {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     }
     .memory-item span[contenteditable] {
       flex: 1;
       min-width: 0;
       word-wrap: break-word;
       white-space: pre-wrap;
-      max-width: 220px; /* Adjust this value as needed */
-      transition: padding 0.3s ease, border 0.3s ease; // Add smooth transition
+      max-width: 280px; /* Increased from 220px */
+      transition: padding 0.3s ease, border 0.3s ease;
     }
-
     .memory-item span[contenteditable].editing {
       padding: 5px;
       border: 1px solid #ccc;
       border-radius: 4px;
       outline: none;
+    }
+    .memory-buttons {
+      display: flex;
+      gap: 5px;
+      margin-left: 10px;
+      align-self: flex-start; 
     }
 
     .new-memory {
@@ -714,17 +804,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     .new-memory-buttons {
       margin-top: 3px;
-    }
-
-    .shortcut-info {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 5px;
-      padding: 6px;
-      font-size: 12px;
-      color: #666;
-      background-color: #f5f5f5; // Added very light gray background
     }
 
     .loading-indicator {
@@ -812,33 +891,72 @@ document.addEventListener("DOMContentLoaded", function () {
       color: #999;
     }
 
-    .ellipsis-menu {
-      position: absolute;
-      top: 50px;
-      right: 10px;
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      display: none;
-      z-index: 1000;
-      width: 140px;
+    .memory-item {
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .ellipsis-menu button {
-      display: block;
+    .memory-content {
+      display: flex;
+      flex-direction: column;
       width: 100%;
-      padding: 8px 5px;
-      text-align: left;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 12px;
-      color: #333;
     }
 
-    .ellipsis-menu button:hover {
+    .memory-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .memory-text {
+      flex: 1;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+
+    .memory-buttons {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .memory-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .memory-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .category {
+      font-size: 11px;
       background-color: #f0f0f0;
+      color: #666;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-right: 4px;
+    }
+
+    .memory-date {
+      font-size: 11px;
+      color: #999;
+      text-align: right;
+      flex-shrink: 0;
     }
   `;
   document.head.appendChild(style);
