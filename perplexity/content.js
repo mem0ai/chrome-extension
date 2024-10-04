@@ -207,6 +207,7 @@ async function handleMem0Click(
   setButtonLoadingState(true);
   if (!message) {
     console.error("No input message found");
+    Sentry.captureMessage("No input message found in handleMem0Click");
     showTooltip(messageTooltip, "No input message");
     setTimeout(() => hideTooltip(messageTooltip), 2000);
     setButtonLoadingState(false);
@@ -241,13 +242,15 @@ async function handleMem0Click(
     const userId = data.userId || "perplexity-user";
     const accessToken = data.access_token;
 
-    if (!apiKey && !accessToken) {
-      showTooltip(messageTooltip, "No API Key or Access Token found");
-      setTimeout(() => hideTooltip(messageTooltip), 2000);
-      isProcessingMem0 = false;
-      setButtonLoadingState(false);
-      return;
-    }
+      if (!apiKey && !accessToken) {
+        Sentry.captureMessage('No API Key or Access Token found in handleMem0Click');
+        showTooltip(messageTooltip, 'No API Key or Access Token found');
+        setTimeout(() => hideTooltip(messageTooltip), 2000);
+        isProcessingMem0 = false;
+        setButtonLoadingState(false);
+        return;
+      }
+
 
     const authHeader = accessToken
       ? `Bearer ${accessToken}`
@@ -258,23 +261,29 @@ async function handleMem0Click(
     console.log(messages);
 
     // Existing search API call
-    const searchResponse = await fetch(
-      "https://api.mem0.ai/v1/memories/search/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-        body: JSON.stringify({
-          query: message,
-          user_id: userId,
-          rerank: true,
-          threshold: 0.3,
-          limit: 10,
-        }),
-      }
-    );
+      const searchResponse = await fetch(
+  "https://api.mem0.ai/v1/memories/search/",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader,
+    },
+    body: JSON.stringify({
+      query: message,
+      user_id: userId,
+      rerank: true,
+      threshold: 0.3,
+      limit: 10,
+    }),
+  }
+);
+
+if (!searchResponse.ok) {
+  const errorMessage = `API request failed with status ${searchResponse.status}`;
+  Sentry.captureException(new Error(errorMessage));
+  throw new Error(errorMessage);
+}
 
     if (!searchResponse.ok) {
       throw new Error(
@@ -335,25 +344,28 @@ async function handleMem0Click(
 
     // New add memory API call (non-blocking)
     fetch("https://api.mem0.ai/v1/memories/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
-      body: JSON.stringify({
-        messages: messages,
-        user_id: userId,
-        infer: true,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.error("Failed to add memory:", response.status);
-        }
-      })
-      .catch((error) => {
-        console.error("Error adding memory:", error);
-      });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: authHeader,
+  },
+  body: JSON.stringify({
+    messages: messages,
+    user_id: userId,
+    infer: true,
+  }),
+})
+  .then((response) => {
+    if (!response.ok) {
+      const errorMessage = `Failed to add memory: ${response.status}`;
+      Sentry.captureMessage(errorMessage);
+      console.error(errorMessage);
+    }
+  })
+  .catch((error) => {
+    Sentry.captureException(error);
+    console.error('Error adding memory:', error);
+  });
   } catch (error) {
     console.error("Error:", error);
     setButtonLoadingState(false);
@@ -369,12 +381,17 @@ function getInputElement() {
     document.querySelector('div[contenteditable="true"]'),
     document.querySelector("textarea"),
   ];
-  const element = elements.find((el) => el !== null);
+
+  const element = elements.find(el => el !== null);
+  if (!element) {
+    Sentry.captureMessage("No input element found in getInputElement");
+  }
   return element;
 }
 
 function getInputValue(inputElement) {
   if (!inputElement) {
+    Sentry.captureMessage("No input element found in getInputValue");
     console.log("No input element found");
     return null;
   }

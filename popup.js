@@ -10,6 +10,12 @@ document.addEventListener("DOMContentLoaded", function () {
   addMemoryButton.id = "addMemoryBtn";
 
   function checkAuthAndFetchMemories(newMemory = false) {
+    Sentry.addBreadcrumb({
+      category: 'auth',
+      message: 'Checking authentication and fetching memories',
+      level: 'info'
+    });
+
     chrome.storage.sync.get(
       ["apiKey", "userId", "access_token"],
       function (data) {
@@ -206,6 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
               })
               .catch((error) => {
                 console.error("Error adding memory:", error);
+                Sentry.captureException("Error adding memory");
                 // Reset the save button if there's an error
                 saveNewBtn.innerHTML =
                   '<img src="/icons/done.svg" alt="Save" class="svg-icon">';
@@ -226,6 +233,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function fetchMemories(userId, apiKey, accessToken) {
+    Sentry.addBreadcrumb({
+      category: 'api',
+      message: 'Fetching memories',
+      level: 'info'
+    });
+
     const headers = getHeaders(apiKey, accessToken);
     return fetch(`https://api.mem0.ai/v1/memories/?user_id=${userId}`, {
       method: "GET",
@@ -237,6 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .catch((error) => {
         console.error("Error fetching memories:", error);
+        Sentry.captureException("Error fetching memories");
         const scrollArea = memoriesContainer.querySelector(".scroll-area");
         scrollArea.innerHTML = "<p>Error fetching memories</p>";
       });
@@ -390,6 +404,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function deleteMemory(memoryId) {
+    Sentry.addBreadcrumb({
+      category: 'api',
+      message: 'Deleting memory',
+      level: 'info'
+    });
+
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
       const headers = getHeaders(data.apiKey, data.access_token);
       fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
@@ -408,15 +428,23 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           } else {
             console.error("Failed to delete memory");
+            Sentry.captureMessage("Failed to delete memory", "error");
           }
         })
         .catch((error) => {
           console.error("Error deleting memory:", error);
+          Sentry.captureException("Error deleting memory");
         });
     });
   }
 
   function editMemory(memoryId, newContent, editBtn) {
+    Sentry.addBreadcrumb({
+      category: 'api',
+      message: 'Editing memory',
+      level: 'info'
+    });
+
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
       const headers = getHeaders(data.apiKey, data.access_token);
 
@@ -439,6 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
             editBtn.disabled = false; // Re-enable the button
           } else {
             console.error("Failed to update memory");
+            Sentry.captureMessage("Failed to update memory", "error");
             // If update fails, revert to the "edit" icon
             editBtn.innerHTML =
               '<img src="/icons/edit.svg" alt="Edit" class="svg-icon">';
@@ -448,6 +477,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch((error) => {
           console.error("Error updating memory:", error);
+          Sentry.captureException("Error updating memory");
           // If there's an error, revert to the "edit" icon
           editBtn.innerHTML =
             '<img src="/icons/edit.svg" alt="Edit" class="svg-icon">';
