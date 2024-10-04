@@ -448,8 +448,7 @@ function handleSyncClick() {
 
   if (table && syncButton) {
     const rows = table.querySelectorAll("tbody tr");
-    let syncedCount = 0;
-    let totalCount = rows.length;
+    let memories = [];
 
     // Change sync button state to loading
     setSyncButtonLoadingState(true);
@@ -457,39 +456,106 @@ function handleSyncClick() {
     rows.forEach((row) => {
       const cells = row.querySelectorAll("td");
       if (cells.length >= 1) {
-        const memory = {
-          content: cells[0]
-            .querySelector("div.whitespace-pre-wrap")
-            .textContent.trim(),
-          timestamp: new Date().toISOString(),
-        };
-
-        sendMemoryToMem0(memory)
-          .then(() => {
-            syncedCount++;
-            if (syncedCount === totalCount) {
-              showSyncPopup(syncButton, `${syncedCount} memories synced`);
-              // Change sync button state back to normal
-              setSyncButtonLoadingState(false);
-            }
-          })
-          .catch((error) => {
-            Sentry.captureException(error);
-            if (syncedCount === totalCount) {
-              showSyncPopup(
-                syncButton,
-                `${syncedCount}/${totalCount} memories synced`
-              );
-              // Change sync button state back to normal
-              setSyncButtonLoadingState(false);
-            }
-          });
+        const content = cells[0]
+          .querySelector("div.whitespace-pre-wrap")
+          .textContent.trim();
+        memories.push({
+          role: "user",
+          content: `Remember this about me: ${content}`
+        });
       }
     });
+
+    sendMemoriesToMem0(memories)
+      .then(() => {
+        showSyncPopup(syncButton, `${memories.length} memories synced`);
+        setSyncButtonLoadingState(false);
+      })
+      .catch((error) => {
+        console.error("Error syncing memories:", error);
+        showSyncPopup(syncButton, "Error syncing memories");
+        setSyncButtonLoadingState(false);
+      });
   } else {
     console.error("Table or Sync button not found");
     Sentry.captureMessage("Table or Sync button not found", "error");
   }
+}
+
+// New function to send memories in batch
+function sendMemoriesToMem0(memories) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(
+      ["apiKey", "userId", "access_token"],
+      function (items) {
+        if ((items.apiKey || items.access_token) && items.userId) {
+          const authHeader = items.access_token
+            ? `Bearer ${items.access_token}`
+            : `Token ${items.apiKey}`;
+          fetch("https://api.mem0.ai/v1/memories/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({
+              messages: memories,
+              user_id: items.userId,
+              infer: true,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                reject(`Failed to add memories: ${response.status}`);
+              } else {
+                resolve();
+              }
+            })
+            .catch((error) => reject(`Error sending memories to Mem0: ${error}`));
+        } else {
+          reject("API Key/Access Token or User ID not set");
+        }
+      }
+    );
+  });
+}
+
+// New function to send memories in batch
+function sendMemoriesToMem0(memories) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(
+      ["apiKey", "userId", "access_token"],
+      function (items) {
+        if ((items.apiKey || items.access_token) && items.userId) {
+          const authHeader = items.access_token
+            ? `Bearer ${items.access_token}`
+            : `Token ${items.apiKey}`;
+          fetch("https://api.mem0.ai/v1/memories/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({
+              messages: memories,
+              user_id: items.userId,
+              infer: true,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                reject(`Failed to add memories: ${response.status}`);
+              } else {
+                resolve();
+              }
+            })
+            .catch((error) => reject(`Error sending memories to Mem0: ${error}`));
+        } else {
+          reject("API Key/Access Token or User ID not set");
+        }
+      }
+    );
+  });
 }
 
 function setSyncButtonLoadingState(isLoading) {
