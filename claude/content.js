@@ -186,13 +186,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
     return;
   }
 
-  const memInfoRegex =
-    /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
-  message = message.replace(memInfoRegex, "").trim();
-  const endIndex = message.indexOf("</p>");
-  if (endIndex !== -1) {
-    message = message.slice(0, endIndex + 4);
-  }
+  message = message.split("Here is some more information about me:")[0];
 
   if (isProcessingMem0) {
     return;
