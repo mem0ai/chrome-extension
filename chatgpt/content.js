@@ -453,18 +453,45 @@ function handleSyncClick() {
     // Change sync button state to loading
     setSyncButtonLoadingState(true);
 
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll("td");
-      if (cells.length >= 1) {
-        const content = cells[0]
-          .querySelector("div.whitespace-pre-wrap")
-          .textContent.trim();
-        memories.push({
-          role: "user",
-          content: `Remember this about me: ${content}`
-        });
-      }
-    });
+const memories = [];
+let syncedCount = 0;
+const totalCount = rows.length;
+
+rows.forEach((row) => {
+  const cells = row.querySelectorAll("td");
+  if (cells.length >= 1) {
+    const content = cells[0]
+      .querySelector("div.whitespace-pre-wrap")
+      .textContent.trim();
+    
+    const memory = {
+      role: "user",
+      content: `Remember this about me: ${content}`,
+      timestamp: new Date().toISOString(),
+    };
+    
+    memories.push(memory);
+    
+    sendMemoryToMem0(memory)
+      .then(() => {
+        syncedCount++;
+        if (syncedCount === totalCount) {
+          showSyncPopup(syncButton, `${syncedCount} memories synced`);
+          setSyncButtonLoadingState(false);
+        }
+      })
+      .catch((error) => {
+        Sentry.captureException(error);
+        if (syncedCount === totalCount) {
+          showSyncPopup(
+            syncButton,
+            `${syncedCount}/${totalCount} memories synced`
+          );
+          setSyncButtonLoadingState(false);
+        }
+      });
+  }
+});
 
     sendMemoriesToMem0(memories)
       .then(() => {
