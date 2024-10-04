@@ -174,6 +174,12 @@ function addMem0Button() {
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
+  Sentry.addBreadcrumb({
+    category: 'user-action',
+    message: 'Mem0 button clicked',
+    level: 'info'
+  });
+
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
     document.querySelector("textarea");
@@ -186,13 +192,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
     return;
   }
 
-  const memInfoRegex =
-    /\s*<strong>Here is some more information about me:<\/strong>[\s\S]*$/;
-  message = message.replace(memInfoRegex, "").trim();
-  const endIndex = message.indexOf("</p>");
-  if (endIndex !== -1) {
-    message = message.slice(0, endIndex + 4);
-  }
+  message = message.split("Here is some more information about me:")[0];
 
   if (isProcessingMem0) {
     return;
@@ -333,6 +333,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
     console.error("Error:", error);
     showPopup(popup, "Failed to send message to Mem0");
     setButtonLoadingState(false);
+    Sentry.captureException("Failed to send message to Mem0");
   } finally {
     isProcessingMem0 = false;
   }
@@ -406,18 +407,30 @@ function getInputValue() {
 }
 
 function initializeMem0Integration() {
+  Sentry.addBreadcrumb({
+    category: 'lifecycle',
+    message: 'Initializing Mem0 integration',
+    level: 'info'
+  });
+
   addMem0Button();
   
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
+      Sentry.addBreadcrumb({
+        category: 'user-action',
+        message: 'Ctrl+M shortcut used',
+        level: 'info'
+      });
       const popup = document.querySelector(".mem0-popup");
       if (popup) {
         (async () => {
-            await handleMem0Click(popup, true);
+          await handleMem0Click(popup, true);
         })();
       } else {
         console.error("Mem0 popup not found");
+        Sentry.captureMessage("Mem0 popup not found", "error");
       }
     }
   });

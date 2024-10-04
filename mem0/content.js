@@ -8,6 +8,7 @@ function fetchAndSaveSession() {
         })
         .catch(error => {
             console.error('Error fetching session:', error);
+            Sentry.captureException(error);
         });
 }
 
