@@ -27,19 +27,19 @@
     "content_scripts": [
         {
             "matches": ["https://claude.ai/*"],
-            "js": ["claude/content.js"]
+            "js": ["sentry.js","sentry-init.js", "claude/content.js"]
         },
         {
             "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
-            "js": ["chatgpt/content.js"]
+            "js": ["sentry.js", "sentry-init.js", "chatgpt/content.js"]
         },
         {
             "matches": ["https://www.perplexity.ai/*"],
-            "js": ["perplexity/content.js"]
+            "js": ["sentry.js", "sentry-init.js", "perplexity/content.js"]
         },
         {
             "matches": ["https://app.mem0.ai/*"],
-            "js": ["mem0/content.js"]
+            "js": ["sentry.js", "sentry-init.js", "mem0/content.js"]
         }
     ],
     "web_accessible_resources": [

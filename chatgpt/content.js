@@ -125,6 +125,12 @@ function addMem0Button() {
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
+  Sentry.addBreadcrumb({
+    category: 'user-action',
+    message: 'Mem0 button clicked',
+    level: 'info'
+  });
+
   setButtonLoadingState(true);
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
@@ -275,10 +281,12 @@ async function handleMem0Click(popup, clickSendButton = false) {
         }),
         }).catch((error) => {
         console.error("Error adding memory:", error);
+        Sentry.captureException("Error adding memory");
         });
 
   } catch (error) {
     console.error("Error:", error);
+    Sentry.captureException("Error in handleMem0Click");
     setButtonLoadingState(false);
   } finally {
     isProcessingMem0 = false;
@@ -427,6 +435,12 @@ function addSyncButton() {
 }
 
 function handleSyncClick() {
+  Sentry.addBreadcrumb({
+    category: 'user-action',
+    message: 'Sync button clicked',
+    level: 'info'
+  });
+
   const table = document.querySelector(
     "table.w-full.border-separate.border-spacing-0"
   );
@@ -460,6 +474,7 @@ function handleSyncClick() {
             }
           })
           .catch((error) => {
+            Sentry.captureException(error);
             if (syncedCount === totalCount) {
               showSyncPopup(
                 syncButton,
@@ -473,6 +488,7 @@ function handleSyncClick() {
     });
   } else {
     console.error("Table or Sync button not found");
+    Sentry.captureMessage("Table or Sync button not found", "error");
   }
 }
 
@@ -559,6 +575,7 @@ function sendMemoryToMem0(memory) {
             })
             .catch((error) => reject(`Error sending memory to Mem0: ${error}`));
         } else {
+          Sentry.captureException("API Key/Access Token or User ID not set");
           reject("API Key/Access Token or User ID not set");
         }
       }
