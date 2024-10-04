@@ -187,6 +187,7 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
   setButtonLoadingState(true);
   if (!message) {
     console.error("No input message found");
+    Sentry.captureMessage("No input message found in handleMem0Click");
     showTooltip(messageTooltip, "No input message");
     setTimeout(() => hideTooltip(messageTooltip), 2000);
     setButtonLoadingState(false);
@@ -222,6 +223,7 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
     const accessToken = data.access_token;
 
       if (!apiKey && !accessToken) {
+        Sentry.captureMessage('No API Key or Access Token found in handleMem0Click');
         showTooltip(messageTooltip, 'No API Key or Access Token found');
         setTimeout(() => hideTooltip(messageTooltip), 2000);
         isProcessingMem0 = false;
@@ -252,9 +254,9 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
       });
 
       if (!searchResponse.ok) {
-        throw new Error(
-          `API request failed with status ${searchResponse.status}`
-        );
+        const errorMessage = `API request failed with status ${searchResponse.status}`;
+        Sentry.captureException(errorMessage);
+        throw new Error(errorMessage);
       }
 
       const responseData = await searchResponse.json();
@@ -317,9 +319,11 @@ async function handleMem0Click(defaultTooltip, messageTooltip, clickSendButton =
         })
       }).then(response => {
         if (!response.ok) {
+          Sentry.captureMessage(`Failed to add memory: ${response.status}`);
           console.error('Failed to add memory:', response.status);
         }
       }).catch(error => {
+        Sentry.captureException('Error adding memory');
         console.error('Error adding memory:', error);
       });
 
@@ -374,11 +378,15 @@ function getInputElement() {
     document.querySelector("textarea")
   ];
   const element = elements.find(el => el !== null);
+  if (!element) {
+    Sentry.captureMessage("No input element found in getInputElement");
+  }
   return element;
 }
 
 function getInputValue(inputElement) {
   if (!inputElement) {
+    Sentry.captureMessage("No input element found in getInputValue");
     console.log("No input element found");
     return null;
   }
