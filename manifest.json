@@ -21,6 +21,7 @@
   "content_scripts": [
     {
       "matches": ["https://claude.ai/*"],
+
       "js": ["sentry.js", "sentry-init.js", "claude/content.js"]
     },
     {
@@ -34,6 +35,7 @@
     {
       "matches": ["https://app.mem0.ai/*"],
       "js": ["sentry.js", "sentry-init.js", "mem0/content.js"]
+
     },
     {
       "matches": ["<all_urls>"],
@@ -47,4 +49,6 @@
       "matches": ["<all_urls>"]
     }
   ]
+
 }
+

@@ -7,9 +7,10 @@
     const sidebarContainer = document.createElement("div");
     sidebarContainer.id = "mem0-sidebar";
     sidebarContainer.style.cssText = `
-        position: fixed;
+        position: fixed; 
         top: 10px;
         right: -400px;
+        color: #000;
         width: 400px;
         height: calc(100vh - 20px);
         background-color: #ffffff;
@@ -57,6 +58,12 @@
           </div>
         </div>
       `;
+
+    // Create a container for search and add inputs
+    const inputContainer = document.createElement("div");
+    inputContainer.className = "input-container";
+    fixedHeader.appendChild(inputContainer);
+
     sidebarContainer.appendChild(fixedHeader);
 
     // Create ellipsis menu
@@ -74,8 +81,8 @@
     scrollArea.className = "scroll-area";
     scrollArea.innerHTML = `
         <div class="loading-indicator">
-          <div class="loader"></div>
-          <p>Loading memories...</p>
+          <div class="loader"></div><br/>
+          <p style="font-size: 12px; color: #888;">Loading memories...</p>
         </div>
       `;
     sidebarContainer.appendChild(scrollArea);
@@ -168,14 +175,15 @@
               if (newMemory) {
                 const scrollArea = document.querySelector(".scroll-area");
                 if (scrollArea) {
-                  scrollArea.scrollTop = 0; // Scroll to the top
+                  scrollArea.scrollTop = scrollArea.scrollHeight; // Scroll to the bottom
                   // Highlight the new memory
-                  const newMemoryElement = scrollArea.firstElementChild;
+                  const newMemoryElement = scrollArea.lastElementChild;
                   if (newMemoryElement) {
                     newMemoryElement.classList.add("highlight");
+                    newMemoryElement.scrollIntoView({ behavior: "smooth" });
                     setTimeout(() => {
                       newMemoryElement.classList.remove("highlight");
-                    }, 1000);
+                    }, 750);
                   }
                 }
               }
@@ -202,11 +210,11 @@
     if (memories.length === 0) {
       searchBtn.style.display = "none";
       scrollArea.innerHTML = `
-          <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
-            <p>No memories found</p>
-            <p>Click the + button to add a new memory or use Mem0 with the chatbot of your choice.</p>
-          </div>
-        `;
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
+          <p>No memories found</p><br/>
+          <p style="color: grey;">Click the + button to add a new memory or use Mem0 with the AI chatbot of your choice.</p>
+        </div>
+      `;
     } else {
       searchBtn.style.display = "flex";
       memories.forEach((memoryItem) => {
@@ -411,24 +419,23 @@
 
   // Add this new function to handle search functionality
   function toggleSearch() {
-    const existingSearchInput = document.querySelector(
-      ".memory-item.search-memory"
-    );
+    const inputContainer = document.querySelector(".input-container");
+    const existingSearchInput = inputContainer.querySelector(".search-memory");
     const searchBtn = document.getElementById("searchBtn");
+    const addMemoryBtn = document.getElementById("addMemoryBtn");
+
+    // Close add memory input if it's open
+    const existingAddInput = inputContainer.querySelector(".add-memory");
+    if (existingAddInput) {
+      existingAddInput.remove();
+      addMemoryBtn.classList.remove("active");
+    }
 
     if (existingSearchInput) {
-      existingSearchInput.remove();
-      searchBtn.classList.remove("active");
-      // Remove filter when search is closed
-      const memoryItems = document.querySelectorAll(
-        ".memory-item:not(.search-memory)"
-      );
-      memoryItems.forEach((item) => {
-        item.style.display = "flex";
-      });
+      closeSearchInput();
     } else {
       const searchMemoryInput = document.createElement("div");
-      searchMemoryInput.className = "memory-item search-memory";
+      searchMemoryInput.className = "search-memory";
       searchMemoryInput.innerHTML = `
         <div class="search-container">
           <img src="${chrome.runtime.getURL(
@@ -438,13 +445,7 @@
         </div>
       `;
 
-      const scrollArea = document.querySelector(".scroll-area");
-      if (scrollArea) {
-        scrollArea.insertBefore(searchMemoryInput, scrollArea.firstChild);
-      } else {
-        console.error("Scroll area not found");
-        return;
-      }
+      inputContainer.appendChild(searchMemoryInput);
 
       const searchMemorySpan = searchMemoryInput.querySelector("span");
 
@@ -457,40 +458,69 @@
       // Modify the event listener for the input event
       searchMemorySpan.addEventListener("input", function () {
         const searchTerm = this.textContent.trim().toLowerCase();
-        const memoryItems = document.querySelectorAll(
-          ".memory-item:not(.search-memory)"
-        );
+        filterMemories(searchTerm);
+      });
 
-        memoryItems.forEach((item) => {
-          const memoryText = item
-            .querySelector(".memory-text")
-            .textContent.toLowerCase();
-          if (memoryText.includes(searchTerm)) {
-            item.style.display = "flex";
-          } else {
-            item.style.display = "none";
-          }
-        });
-
-        // Add this line to maintain the width of the sidebar
-        document.getElementById("mem0-sidebar").style.width = "400px";
+      // Add event listener for the Escape key
+      searchMemorySpan.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeSearchInput();
+        }
       });
 
       searchBtn.classList.add("active");
     }
   }
 
+  function closeSearchInput() {
+    const inputContainer = document.querySelector(".input-container");
+    const existingSearchInput = inputContainer.querySelector(".search-memory");
+    const searchBtn = document.getElementById("searchBtn");
+
+    if (existingSearchInput) {
+      existingSearchInput.remove();
+      searchBtn.classList.remove("active");
+      // Remove filter when search is closed
+      filterMemories("");
+    }
+  }
+
+  function filterMemories(searchTerm) {
+    const memoryItems = document.querySelectorAll(".memory-item");
+
+    memoryItems.forEach((item) => {
+      const memoryText = item
+        .querySelector(".memory-text")
+        .textContent.toLowerCase();
+      if (memoryText.includes(searchTerm)) {
+        item.style.display = "flex";
+      } else {
+        item.style.display = "none";
+      }
+    });
+
+    // Add this line to maintain the width of the sidebar
+    document.getElementById("mem0-sidebar").style.width = "400px";
+  }
+
   // Add this new function to handle adding a new memory
   function addNewMemory() {
-    const existingAddInput = document.querySelector(".memory-item.add-memory");
+    const inputContainer = document.querySelector(".input-container");
+    const existingAddInput = inputContainer.querySelector(".add-memory");
     const addMemoryBtn = document.getElementById("addMemoryBtn");
+    const searchBtn = document.getElementById("searchBtn");
+
+    // Close search input if it's open
+    const existingSearchInput = inputContainer.querySelector(".search-memory");
+    if (existingSearchInput) {
+      closeSearchInput();
+    }
 
     if (existingAddInput) {
-      existingAddInput.remove();
-      addMemoryBtn.classList.remove("active");
+      closeAddMemoryInput();
     } else {
       const addMemoryInput = document.createElement("div");
-      addMemoryInput.className = "memory-item add-memory";
+      addMemoryInput.className = "add-memory";
       addMemoryInput.innerHTML = `
         <div class="add-container">
           <img src="${chrome.runtime.getURL(
@@ -500,13 +530,7 @@
         </div>
       `;
 
-      const scrollArea = document.querySelector(".scroll-area");
-      if (scrollArea) {
-        scrollArea.insertBefore(addMemoryInput, scrollArea.firstChild);
-      } else {
-        console.error("Scroll area not found");
-        return;
-      }
+      inputContainer.appendChild(addMemoryInput);
 
       const addMemorySpan = addMemoryInput.querySelector("span");
 
@@ -524,13 +548,25 @@
           if (newContent) {
             saveNewMemory(newContent, addMemoryInput);
           } else {
-            addMemoryInput.remove();
-            addMemoryBtn.classList.remove("active");
+            closeAddMemoryInput();
           }
+        } else if (event.key === "Escape") {
+          closeAddMemoryInput();
         }
       });
 
       addMemoryBtn.classList.add("active");
+    }
+  }
+
+  function closeAddMemoryInput() {
+    const inputContainer = document.querySelector(".input-container");
+    const existingAddInput = inputContainer.querySelector(".add-memory");
+    const addMemoryBtn = document.getElementById("addMemoryBtn");
+
+    if (existingAddInput) {
+      existingAddInput.remove();
+      addMemoryBtn.classList.remove("active");
     }
   }
 
@@ -542,9 +578,8 @@
 
         // Show loading indicator
         addMemoryInput.innerHTML = `
-          <div class="loading-indicator">
+          <div class="loading-indicator" style="width: 100%; display: flex; justify-content: center; align-items: center;">
             <div class="loader"></div>
-            <p>Saving memory...</p>
           </div>
         `;
 
@@ -560,7 +595,7 @@
           .then((response) => response.json())
           .then((data) => {
             addMemoryInput.remove();
-            fetchAndDisplayMemories(true); // Refresh the memories list
+            fetchAndDisplayMemories(true); // Refresh the memories list and highlight the new memory
           })
           .catch((error) => {
             console.error("Error adding memory:", error);
@@ -582,15 +617,21 @@
         .fixed-header {
           position: sticky;
           top: 0;
-          background-color: #ffffff;
+          background-image: url('${chrome.runtime.getURL(
+            "icons/header-bg.png"
+          )}');
+          background-size: cover;
+          background-position: center;
           z-index: 1000;
           width: 100%;
+          display: flex;
+          flex-direction: column;
         }
         .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 20px 10px 10px 15px;
+          padding: 20px 10px 15px 15px;
           width: 100%
         }
         .logo-container {
@@ -775,12 +816,12 @@
         }
         .search-memory {
           display: flex;
-          padding: 10px;
+          
           align-items: center;
-          border-bottom: 1px solid #e0e0e0;
+          
           width: 100%;
           box-sizing: border-box;
-          background-color: #f5f5f5;
+          background-color: transparent;
         }
 
         .search-container {
@@ -803,7 +844,6 @@
         .search-memory span[contenteditable] {
           flex: 1;
           border: none;
-          padding: 0;
           outline: none;
           min-height: 16px;
           color: black;
@@ -836,12 +876,10 @@
 
         .add-memory {
           display: flex;
-          padding: 10px;
           align-items: center;
-          border-bottom: 1px solid #e0e0e0;
           width: 100%;
           box-sizing: border-box;
-          background-color: #f5f5f5;
+          background-color: transparent;
         }
 
         .add-container {
@@ -908,6 +946,27 @@
 
         .ellipsis-menu button:hover {
           background-color: #f5f5f5;
+        }
+
+        .input-container {
+          width: 100%;
+          padding: 0px 10px 0px 10px;
+          box-sizing: border-box;
+        }
+
+        .scroll-area {
+          flex-grow: 1;
+          overflow-y: auto;
+          padding: 10px;
+          width: 100%;
+        }
+
+        .search-memory,
+        .add-memory {
+          width: 100%;
+          box-sizing: border-box;
+          margin-bottom: 15px;
+          padding-right: 5px;
         }
   `;
     document.head.appendChild(style);
