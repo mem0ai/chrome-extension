@@ -233,7 +233,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
                     'Content-Type': 'application/json',
                     'Authorization': authHeader
                 },
-                body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.3, limit: 10, filter_memories: true })
+                body: JSON.stringify({ query: message, user_id: userId, rerank: false, threshold: 0.3, limit: 10, filter_memories: true })
             });
 
             if (clickSendButton) {
