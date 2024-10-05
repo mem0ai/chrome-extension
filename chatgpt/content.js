@@ -125,6 +125,12 @@ function addMem0Button() {
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
+  Sentry.addBreadcrumb({
+    category: 'user-action',
+    message: 'Mem0 button clicked',
+    level: 'info'
+  });
+
   setButtonLoadingState(true);
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
@@ -190,9 +196,10 @@ async function handleMem0Click(popup, clickSendButton = false) {
             body: JSON.stringify({
               query: message,
               user_id: userId,
-              rerank: true,
+              rerank: false,
               threshold: 0.3,
               limit: 10,
+              filter_memories: true,
             }),
           }
         );
@@ -275,10 +282,12 @@ async function handleMem0Click(popup, clickSendButton = false) {
         }),
         }).catch((error) => {
         console.error("Error adding memory:", error);
+        Sentry.captureException("Error adding memory");
         });
 
   } catch (error) {
     console.error("Error:", error);
+    Sentry.captureException("Error in handleMem0Click");
     setButtonLoadingState(false);
   } finally {
     isProcessingMem0 = false;
@@ -427,6 +436,12 @@ function addSyncButton() {
 }
 
 function handleSyncClick() {
+  Sentry.addBreadcrumb({
+    category: 'user-action',
+    message: 'Sync button clicked',
+    level: 'info'
+  });
+
   const table = document.querySelector(
     "table.w-full.border-separate.border-spacing-0"
   );
@@ -439,18 +454,45 @@ function handleSyncClick() {
     // Change sync button state to loading
     setSyncButtonLoadingState(true);
 
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll("td");
-      if (cells.length >= 1) {
-        const content = cells[0]
-          .querySelector("div.whitespace-pre-wrap")
-          .textContent.trim();
-        memories.push({
-          role: "user",
-          content: `Remember this about me: ${content}`
-        });
-      }
-    });
+const memories = [];
+let syncedCount = 0;
+const totalCount = rows.length;
+
+rows.forEach((row) => {
+  const cells = row.querySelectorAll("td");
+  if (cells.length >= 1) {
+    const content = cells[0]
+      .querySelector("div.whitespace-pre-wrap")
+      .textContent.trim();
+    
+    const memory = {
+      role: "user",
+      content: `Remember this about me: ${content}`,
+      timestamp: new Date().toISOString(),
+    };
+    
+    memories.push(memory);
+    
+    sendMemoryToMem0(memory)
+      .then(() => {
+        syncedCount++;
+        if (syncedCount === totalCount) {
+          showSyncPopup(syncButton, `${syncedCount} memories synced`);
+          setSyncButtonLoadingState(false);
+        }
+      })
+      .catch((error) => {
+        Sentry.captureException(error);
+        if (syncedCount === totalCount) {
+          showSyncPopup(
+            syncButton,
+            `${syncedCount}/${totalCount} memories synced`
+          );
+          setSyncButtonLoadingState(false);
+        }
+      });
+  }
+});
 
     sendMemoriesToMem0(memories)
       .then(() => {
@@ -464,8 +506,48 @@ function handleSyncClick() {
       });
   } else {
     console.error("Table or Sync button not found");
+    Sentry.captureMessage("Table or Sync button not found", "error");
   }
 }
+
+// New function to send memories in batch
+function sendMemoriesToMem0(memories) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(
+      ["apiKey", "userId", "access_token"],
+      function (items) {
+        if ((items.apiKey || items.access_token) && items.userId) {
+          const authHeader = items.access_token
+            ? `Bearer ${items.access_token}`
+            : `Token ${items.apiKey}`;
+          fetch("https://api.mem0.ai/v1/memories/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({
+              messages: memories,
+              user_id: items.userId,
+              infer: true,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                reject(`Failed to add memories: ${response.status}`);
+              } else {
+                resolve();
+              }
+            })
+            .catch((error) => reject(`Error sending memories to Mem0: ${error}`));
+        } else {
+          reject("API Key/Access Token or User ID not set");
+        }
+      }
+    );
+  });
+}
+
 
 // New function to send memories in batch
 function sendMemoriesToMem0(memories) {
@@ -588,6 +670,7 @@ function sendMemoryToMem0(memory) {
             })
             .catch((error) => reject(`Error sending memory to Mem0: ${error}`));
         } else {
+          Sentry.captureException("API Key/Access Token or User ID not set");
           reject("API Key/Access Token or User ID not set");
         }
       }

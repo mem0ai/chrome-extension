@@ -174,6 +174,12 @@ function addMem0Button() {
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
+  Sentry.addBreadcrumb({
+    category: 'user-action',
+    message: 'Mem0 button clicked',
+    level: 'info'
+  });
+
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
     document.querySelector("textarea");
@@ -227,7 +233,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
                     'Content-Type': 'application/json',
                     'Authorization': authHeader
                 },
-                body: JSON.stringify({ query: message, user_id: userId, rerank: true, threshold: 0.3, limit: 10 })
+                body: JSON.stringify({ query: message, user_id: userId, rerank: false, threshold: 0.3, limit: 10, filter_memories: true })
             });
 
             if (clickSendButton) {
@@ -327,6 +333,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
     console.error("Error:", error);
     showPopup(popup, "Failed to send message to Mem0");
     setButtonLoadingState(false);
+    Sentry.captureException("Failed to send message to Mem0");
   } finally {
     isProcessingMem0 = false;
   }
@@ -400,18 +407,30 @@ function getInputValue() {
 }
 
 function initializeMem0Integration() {
+  Sentry.addBreadcrumb({
+    category: 'lifecycle',
+    message: 'Initializing Mem0 integration',
+    level: 'info'
+  });
+
   addMem0Button();
   
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
+      Sentry.addBreadcrumb({
+        category: 'user-action',
+        message: 'Ctrl+M shortcut used',
+        level: 'info'
+      });
       const popup = document.querySelector(".mem0-popup");
       if (popup) {
         (async () => {
-            await handleMem0Click(popup, true);
+          await handleMem0Click(popup, true);
         })();
       } else {
         console.error("Mem0 popup not found");
+        Sentry.captureMessage("Mem0 popup not found", "error");
       }
     }
   });
