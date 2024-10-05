@@ -255,7 +255,6 @@ async function handleMem0Click(
 
     const messages = [];
     messages.push({ role: "user", content: message });
-    console.log(messages);
 
     // Existing search API call
     const searchResponse = await fetch(
