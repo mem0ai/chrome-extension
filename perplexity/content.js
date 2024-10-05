@@ -272,9 +272,10 @@ async function handleMem0Click(
     body: JSON.stringify({
       query: message,
       user_id: userId,
-      rerank: true,
+      rerank: false,
       threshold: 0.3,
       limit: 10,
+      filter_memories: true,
     }),
   }
 );
