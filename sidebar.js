@@ -22,10 +22,25 @@
       // If sidebar exists, toggle its visibility
       sidebarVisible = !sidebarVisible;
       sidebar.style.right = sidebarVisible ? "0px" : "-450px";
+      
+      // Add or remove click listener based on sidebar visibility
+      if (sidebarVisible) {
+        document.addEventListener('click', handleOutsideClick);
+      } else {
+        document.removeEventListener('click', handleOutsideClick);
+      }
     } else {
       // If sidebar doesn't exist, create it
       createSidebar();
       sidebarVisible = true;
+      document.addEventListener('click', handleOutsideClick);
+    }
+  }
+
+  function handleOutsideClick(event) {
+    let sidebar = document.getElementById("mem0-sidebar");
+    if (sidebar && !sidebar.contains(event.target) && !event.target.closest('.mem0-toggle-btn')) {
+      toggleSidebar();
     }
   }
 
@@ -165,6 +180,10 @@
       sidebarContainer.style.right = "0";
     }, 0);
 
+    // Prevent clicks within the sidebar from closing it
+    sidebarContainer.addEventListener('click', (event) => {
+      event.stopPropagation();
+    });
 
     // Add styles
     addStyles();
