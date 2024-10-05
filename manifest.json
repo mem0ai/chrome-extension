@@ -8,7 +8,7 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs", "activeTab"],
   "host_permissions": ["https://api.mem0.ai/*", "https://app.mem0.ai/*"],
   "action": {
     "default_popup": "popup.html",
@@ -18,10 +18,12 @@
       "128": "icons/icon128.png"
     }
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://claude.ai/*"],
-
       "js": ["sentry.js", "sentry-init.js", "claude/content.js"]
     },
     {
@@ -35,11 +37,10 @@
     {
       "matches": ["https://app.mem0.ai/*"],
       "js": ["sentry.js", "sentry-init.js", "mem0/content.js"]
-
     },
     {
       "matches": ["<all_urls>"],
-      "js": ["sidebar.js"],
+      "js": ["sentry.js", "sentry-init.js", "sidebar.js"],
       "run_at": "document_end"
     }
   ],
@@ -49,6 +50,4 @@
       "matches": ["<all_urls>"]
     }
   ]
-
 }
-

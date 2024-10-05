@@ -199,11 +199,8 @@ async function handleMem0Click(
   messageTooltip,
   clickSendButton = false
 ) {
-  console.log("handleMem0Click called");
   const inputElement = getInputElement();
-  console.log("Input element:", inputElement);
   let message = getInputValue(inputElement);
-  console.log("Message:", message);
   setButtonLoadingState(true);
   if (!message) {
     console.error("No input message found");
@@ -259,104 +256,102 @@ async function handleMem0Click(
 
     const messages = [];
     messages.push({ role: "user", content: message });
-console.log(messages);
-// Existing search API call
-const searchResponse = await fetch(
-  "https://api.mem0.ai/v1/memories/search/",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: authHeader,
-    },
-    body: JSON.stringify({
-      query: message,
-      user_id: userId,
-      rerank: false,
-      threshold: 0.3,
-      limit: 10,
-      filter_memories: true,
-    }),
-  }
-);
 
-if (!searchResponse.ok) {
-  const errorMessage = `API request failed with status ${searchResponse.status}`;
-  Sentry.captureException(new Error(errorMessage));
-  throw new Error(errorMessage);
-}
-
-const responseData = await searchResponse.json();
-if (inputElement) {
-  const memories = responseData.map((item) => item.memory);
-  if (memories.length > 0) {
-    // Prepare the memories content
-    let currentContent = getInputValue(inputElement);
-    const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
-    currentContent = currentContent.replace(memInfoRegex, "").trim();
-    let memoriesContent = "\n\nHere is some more information about me:\n";
-    memories.forEach((mem, index) => {
-      memoriesContent += `- ${mem}`;
-      if (index < memories.length - 1) {
-        memoriesContent += "\n";
+    // Existing search API call
+    const searchResponse = await fetch(
+      "https://api.mem0.ai/v1/memories/search/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          query: message,
+          user_id: userId,
+          rerank: false,
+          threshold: 0.3,
+          limit: 10,
+          filter_memories: true,
+        }),
       }
-    });
-    // Insert the memories into the input field
-    setInputValue(inputElement, currentContent + memoriesContent);
-    setButtonLoadingState(false);
-  }
-}
-        if (clickSendButton) {
-          const sendButton = inputElement.closest(
-            '[data-testid="quick-search-modal"]'
-          )
-            ? inputElement
-                .closest('[data-testid="quick-search-modal"]')
-                .querySelector('button[aria-label="Submit"]')
-            : document.querySelector('button[aria-label="Submit"]');
+    );
 
-          if (sendButton) {
-            setTimeout(() => {
-              sendButton.click();
-            }, 100);
-          } else {
-            console.error("Send button not found");
+    if (!searchResponse.ok) {
+      const errorMessage = `API request failed with status ${searchResponse.status}`;
+      Sentry.captureException(new Error(errorMessage));
+      throw new Error(errorMessage);
+    }
+
+    const responseData = await searchResponse.json();
+    if (inputElement) {
+      const memories = responseData.map((item) => item.memory);
+      if (memories.length > 0) {
+        // Prepare the memories content
+        let currentContent = getInputValue(inputElement);
+        const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
+        currentContent = currentContent.replace(memInfoRegex, "").trim();
+        let memoriesContent = "\n\nHere is some more information about me:\n";
+        memories.forEach((mem, index) => {
+          memoriesContent += `- ${mem}`;
+          if (index < memories.length - 1) {
+            memoriesContent += "\n";
           }
-        }
-      } else {
-        showTooltip(messageTooltip, "No memories found");
-        setTimeout(() => hideTooltip(messageTooltip), 2000);
+        });
+        // Insert the memories into the input field
+        setInputValue(inputElement, currentContent + memoriesContent);
         setButtonLoadingState(false);
       }
+
+      if (clickSendButton) {
+        const sendButton = inputElement.closest(
+          '[data-testid="quick-search-modal"]'
+        )
+          ? inputElement
+              .closest('[data-testid="quick-search-modal"]')
+              .querySelector('button[aria-label="Submit"]')
+          : document.querySelector('button[aria-label="Submit"]');
+
+        if (sendButton) {
+          setTimeout(() => {
+            sendButton.click();
+          }, 100);
+        } else {
+          console.error("Send button not found");
+        }
+      }
+    } else {
+      showTooltip(messageTooltip, "No memories found");
+      setTimeout(() => hideTooltip(messageTooltip), 2000);
+      setButtonLoadingState(false);
     }
     setTimeout(() => hideTooltip(messageTooltip), 2000);
     setButtonLoadingState(false);
 
     // New add memory API call (non-blocking)
     fetch("https://api.mem0.ai/v1/memories/", {
-
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: authHeader,
-  },
-  body: JSON.stringify({
-    messages: messages,
-    user_id: userId,
-    infer: true,
-  }),
-})
-  .then((response) => {
-    if (!response.ok) {
-      const errorMessage = `Failed to add memory: ${response.status}`;
-      Sentry.captureMessage(errorMessage);
-      console.error(errorMessage);
-    }
-  })
-  .catch((error) => {
-    Sentry.captureException(error);
-    console.error('Error adding memory:', error);
-  });
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        user_id: userId,
+        infer: true,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          const errorMessage = `Failed to add memory: ${response.status}`;
+          Sentry.captureMessage(errorMessage);
+          console.error(errorMessage);
+        }
+      })
+      .catch((error) => {
+        Sentry.captureException(error);
+        console.error('Error adding memory:', error);
+      });
 
   } catch (error) {
     console.error("Error:", error);
@@ -386,7 +381,6 @@ function getInputElement() {
 function getInputValue(inputElement) {
   if (!inputElement) {
     Sentry.captureMessage("No input element found in getInputValue");
-    console.log("No input element found");
     return null;
   }
 
@@ -407,8 +401,6 @@ function getInputValue(inputElement) {
       }
     }
   }
-
-  console.log("Input value:", value);
   return value;
 }
 

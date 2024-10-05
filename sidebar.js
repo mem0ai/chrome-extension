@@ -1,4 +1,34 @@
 (function () {
+  let sidebarVisible = false;
+
+  function initializeMem0Sidebar() {
+    // Listen for messages from the extension
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === "toggleSidebar") {
+        chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
+          if (data.apiKey || data.access_token) {
+            toggleSidebar();
+          } else {
+            chrome.runtime.sendMessage({ action: "openPopup" });
+          }
+        });
+      }
+    });
+  }
+
+  function toggleSidebar() {
+    let sidebar = document.getElementById("mem0-sidebar");
+    if (sidebar) {
+      // If sidebar exists, toggle its visibility
+      sidebarVisible = !sidebarVisible;
+      sidebar.style.right = sidebarVisible ? "0px" : "-450px";
+    } else {
+      // If sidebar doesn't exist, create it
+      createSidebar();
+      sidebarVisible = true;
+    }
+  }
+
   function createSidebar() {
     if (document.getElementById("mem0-sidebar")) {
       return;
@@ -130,33 +160,14 @@
 
     document.body.appendChild(sidebarContainer);
 
-    // Slide in the sidebar after a short delay
+    // Slide in the sidebar immediately after creation
     setTimeout(() => {
       sidebarContainer.style.right = "0";
-    }, 100);
+    }, 0);
 
-    console.log("Mem0 sidebar created and added to the page");
 
     // Add styles
     addStyles();
-  }
-
-  function initializeMem0Sidebar() {
-    createSidebar();
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach(() => {
-        createSidebar();
-      });
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeMem0Sidebar);
-  } else {
-    initializeMem0Sidebar();
   }
 
   function fetchAndDisplayMemories(newMemory = false) {
@@ -995,9 +1006,10 @@
     chrome.storage.sync.remove(
       ["apiKey", "userId", "access_token"],
       function () {
-        console.log("User logged out");
-        // Redirect to login page or show login form
-        // You may need to implement this part based on your authentication flow
+        const sidebar = document.getElementById("mem0-sidebar");
+        if (sidebar) {
+          sidebar.style.right = "-450px";
+        }
       }
     );
   }
@@ -1005,9 +1017,17 @@
   function openDashboard() {
     chrome.storage.sync.get(["userId"], function (data) {
       const userId = data.userId || "chrome-extension-user";
-      chrome.tabs.create({
-        url: `https://app.mem0.ai/dashboard/user/${userId}`,
+      chrome.runtime.sendMessage({
+        action: "openDashboard",
+        url: `https://app.mem0.ai/dashboard/user/${userId}`
       });
     });
+  }
+
+  // Initialize the listener when the script loads
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeMem0Sidebar);
+  } else {
+    initializeMem0Sidebar();
   }
 })();

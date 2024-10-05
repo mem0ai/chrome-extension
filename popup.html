@@ -3,143 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Memories</title>
+    <title>Mem0 Sign In</title>
     <script src="sentry.js"></script>
     <script src="sentry-init.js"></script>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        width: 400px;
+        width: 300px;
         margin: 0;
+        padding: 20px;
         background-color: #ffffff;
         color: #000000;
-        border-radius: 0.5rem;
-      }
-      .card {
-        width: 100%;
-        box-shadow: none;
-        border: none;
-      }
-      .card-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 1rem;
-        margin-top: 1rem;
       }
       .logo {
-        width: 64px;
-        height: 64px;
+        width: 100%;
         display: flex;
-        align-items: center;
         justify-content: center;
-        margin-bottom: -20px; /* Reduced from 0.5rem to 0.25rem */
+        margin-bottom: 20px;
       }
-      .shortcut {
-        display: flex;
-        align-items: center;
-        font-size: 0.875rem;
-        color: #6b7280;
+      .logo img {
+        width: 110px;
+        height: 55px;
+        object-fit: contain;
       }
-      .shortcut svg {
-        width: 1rem;
-        height: 1rem;
-        margin-right: 0.25rem;
-      }
-      .card-content {
+      .content {
         text-align: center;
-        font-size: 0.875rem;
-        color: #6b7280;
-        padding: 0 1rem;
-      }
-      .card-footer {
-        padding: 1rem;
-        display: flex;
-        justify-content: center;
-        margin-bottom: 0.5rem;
       }
       .button {
-        width: 80%;
-        padding: 0.5rem 1rem;
+        width: 100%;
+        padding: 10px;
         background-color: #ffffff;
         color: #000000;
         border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.8rem;
+        border-radius: 4px;
+        font-size: 14px;
         font-weight: 500;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: background-color 0.2s;
+        margin-top: 20px;
       }
       .button:hover {
         background-color: #f3f4f6;
       }
       .button svg {
-        width: 1rem;
-        height: 1rem;
-        margin-right: 0.5rem;
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
       }
     </style>
   </head>
   <body>
-    <div id="memoriesContainer"></div>
-    <div id="settingsContainer">
-      <div class="card">
-        <div class="card-header">
-          <div class="logo">
-            <img
-              src="icons/mem0-logo.png"
-              alt="Mem0 Logo"
-              width="110"
-              height="55"
-              style="object-fit: contain"
-            />
-          </div>
-          <!-- <div class="shortcut">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"
-              ></path>
-            </svg>
-            <p>+ <span style="font-weight: 600">M</span></p>
-          </div> -->
-        </div>
-        <div class="card-content">
-          <p>Personalized responses, across AI apps.</p>
-        </div>
-        <div class="card-footer">
-          <button class="button" id="googleSignInButton">
-            <svg
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fab"
-              data-icon="google"
-              role="img"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 488 512"
-            >
-              <path
-                fill="currentColor"
-                d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-              ></path>
-            </svg>
-            Sign in with Google
-          </button>
-        </div>
-      </div>
+    <div class="logo">
+      <img src="icons/mem0-logo.png" alt="Mem0 Logo" />
+    </div>
+    <div class="content">
+      <p>Personalized responses, across AI apps.</p>
+      <button id="googleSignInButton" class="button">
+        <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+          <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+        </svg>
+        Sign in with Google
+      </button>
     </div>
     <script src="popup.js"></script>
   </body>
