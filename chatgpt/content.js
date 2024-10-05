@@ -199,6 +199,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
               rerank: true,
               threshold: 0.3,
               limit: 10,
+              filter_memories: true,
             }),
           }
         );
