@@ -174,11 +174,6 @@ function addMem0Button() {
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
-  Sentry.addBreadcrumb({
-    category: 'user-action',
-    message: 'Mem0 button clicked',
-    level: 'info'
-  });
 
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
@@ -407,22 +402,12 @@ function getInputValue() {
 }
 
 function initializeMem0Integration() {
-  Sentry.addBreadcrumb({
-    category: 'lifecycle',
-    message: 'Initializing Mem0 integration',
-    level: 'info'
-  });
 
   addMem0Button();
-  
+
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
-      Sentry.addBreadcrumb({
-        category: 'user-action',
-        message: 'Ctrl+M shortcut used',
-        level: 'info'
-      });
       const popup = document.querySelector(".mem0-popup");
       if (popup) {
         (async () => {

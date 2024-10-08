@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mem0",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Own your memory and preferences across any Gen AI apps like ChatGPT, Claude, Perplexity, etc & get personalized, relevant responses.",
   "icons": {
     "16": "icons/icon16.png",
@@ -24,23 +24,23 @@
   "content_scripts": [
     {
       "matches": ["https://claude.ai/*"],
-      "js": ["sentry.js", "sentry-init.js", "claude/content.js"]
+      "js": ["claude/content.js"]
     },
     {
       "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
-      "js": ["sentry.js", "sentry-init.js", "chatgpt/content.js"]
+      "js": ["chatgpt/content.js"]
     },
     {
       "matches": ["https://www.perplexity.ai/*"],
-      "js": ["sentry.js", "sentry-init.js", "perplexity/content.js"]
+      "js": ["perplexity/content.js"]
     },
     {
       "matches": ["https://app.mem0.ai/*"],
-      "js": ["sentry.js", "sentry-init.js", "mem0/content.js"]
+      "js": ["mem0/content.js"]
     },
     {
       "matches": ["<all_urls>"],
-      "js": ["sentry.js", "sentry-init.js", "sidebar.js"],
+      "js": ["sidebar.js"],
       "run_at": "document_end"
     }
   ],
