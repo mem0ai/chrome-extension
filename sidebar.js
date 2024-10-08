@@ -26,6 +26,7 @@
       // Add or remove click listener based on sidebar visibility
       if (sidebarVisible) {
         document.addEventListener('click', handleOutsideClick);
+        fetchAndDisplayMemories(); // Fetch and display memories when sidebar is opened
       } else {
         document.removeEventListener('click', handleOutsideClick);
       }
@@ -34,6 +35,7 @@
       createSidebar();
       sidebarVisible = true;
       document.addEventListener('click', handleOutsideClick);
+      fetchAndDisplayMemories(); // Fetch and display memories when sidebar is created
     }
   }
 
