@@ -125,12 +125,6 @@ function addMem0Button() {
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
-  Sentry.addBreadcrumb({
-    category: 'user-action',
-    message: 'Mem0 button clicked',
-    level: 'info'
-  });
-
   setButtonLoadingState(true);
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
@@ -289,6 +283,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
     console.error("Error:", error);
     Sentry.captureException("Error in handleMem0Click");
     setButtonLoadingState(false);
+    throw error; // Rethrow the error to be caught in the calling function
   } finally {
     isProcessingMem0 = false;
   }
@@ -436,11 +431,6 @@ function addSyncButton() {
 }
 
 function handleSyncClick() {
-  Sentry.addBreadcrumb({
-    category: 'user-action',
-    message: 'Sync button clicked',
-    level: 'info'
-  });
 
   const table = document.querySelector(
     "table.w-full.border-separate.border-spacing-0"
@@ -508,45 +498,6 @@ function handleSyncClick() {
     Sentry.captureMessage("Table or Sync button not found", "error");
   }
 }
-
-// New function to send memories in batch
-function sendMemoriesToMem0(memories) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(
-      ["apiKey", "userId", "access_token"],
-      function (items) {
-        if ((items.apiKey || items.access_token) && items.userId) {
-          const authHeader = items.access_token
-            ? `Bearer ${items.access_token}`
-            : `Token ${items.apiKey}`;
-          fetch("https://api.mem0.ai/v1/memories/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: authHeader,
-            },
-            body: JSON.stringify({
-              messages: memories,
-              user_id: items.userId,
-              infer: true,
-            }),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                reject(`Failed to add memories: ${response.status}`);
-              } else {
-                resolve();
-              }
-            })
-            .catch((error) => reject(`Error sending memories to Mem0: ${error}`));
-        } else {
-          reject("API Key/Access Token or User ID not set");
-        }
-      }
-    );
-  });
-}
-
 
 // New function to send memories in batch
 function sendMemoriesToMem0(memories) {
@@ -681,6 +632,7 @@ function initializeMem0Integration() {
   document.addEventListener("DOMContentLoaded", () => {
     addMem0Button();
     addSyncButton();
+    addEnterKeyInterception();
   });
 
   document.addEventListener("keydown", function (event) {
@@ -703,6 +655,48 @@ function initializeMem0Integration() {
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // Add a MutationObserver to watch for changes in the DOM
+  const observerForEnterKey = new MutationObserver(() => {
+    addEnterKeyInterception();
+  });
+
+  observerForEnterKey.observe(document.body, { childList: true, subtree: true });
+}
+
+function addEnterKeyInterception() {
+  const inputElement = document.querySelector('div[contenteditable="true"]') || document.querySelector("textarea");
+
+  if (inputElement && !inputElement.dataset.enterKeyIntercepted) {
+    inputElement.dataset.enterKeyIntercepted = 'true';
+
+    inputElement.addEventListener("keydown", function(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Get the input text
+        const inputText = inputElement.tagName.toLowerCase() === 'div'
+          ? inputElement.textContent.trim()
+          : inputElement.value.trim();
+        // Call handleMem0Click
+        const popup = document.querySelector(".mem0-popup");
+        if (popup) {
+          handleMem0Click(popup, true)
+            .then(() => {
+              // If you want to submit the message after Mem0 processing:
+              // const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+              // if (sendButton) sendButton.click();
+            })
+            .catch((error) => {
+              console.error("Error in Mem0 processing:", error);
+            });
+        } else {
+          console.error("Mem0 popup not found");
+        }
+      }
+    }, true);
+  }
 }
 
 initializeMem0Integration();
