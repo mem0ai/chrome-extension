@@ -630,7 +630,7 @@ function sendMemoryToMem0(memory) {
 
 function initializeMem0Integration() {
   document.addEventListener("DOMContentLoaded", () => {
-    addMem0Button();
+    // addMem0Button();
     addSyncButton();
     addEnterKeyInterception();
   });
