@@ -16,12 +16,23 @@ document.addEventListener("DOMContentLoaded", function () {
   if (googleSignInButton) {
     googleSignInButton.addEventListener("click", function () {
       chrome.storage.sync.set({ userId: "chrome-extension-user" });
-      chrome.tabs.create(
-        { url: "https://app.mem0.ai/login?source=chrome-extension" },
-        function (tab) {
-          window.close();
+      chrome.storage.sync.get(["userLoggedIn"], function (data) {
+        if (data.userLoggedIn) {
+          chrome.tabs.create(
+            { url: "https://app.mem0.ai/extension" },
+            function (tab) {
+              window.close();
+            }
+          );
+        } else {
+          chrome.tabs.create(
+            { url: "https://app.mem0.ai/login?source=chrome-extension" },
+            function (tab) {
+              window.close();
+          }
+          );
         }
-      );
+      });
     });
   }
 
