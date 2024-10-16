@@ -32,7 +32,6 @@ function setupInputObserver() {
     lastInputValue = this.value;
   });
 
-  // Add this new event listener
   textarea.addEventListener('keypress', function(event) {
   });
 
@@ -54,7 +53,6 @@ function handleEnterKey(event) {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
     const textarea = getTextarea();
     if (textarea && document.activeElement === textarea) {
-      // Get the current value directly from the textarea
       const capturedText = textarea.value.trim();
 
       if (capturedText) {
@@ -77,10 +75,9 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
   }
 
   try {
-    // Your existing API call logic here
     const data = await new Promise((resolve) => {
       chrome.storage.sync.get(
-        ["apiKey", "userId", "access_token"],
+        ["apiKey", "userId", "access_token", "memory_enabled"],
         function (items) {
           resolve(items);
         }
@@ -90,9 +87,18 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
     const apiKey = data.apiKey;
     const userId = data.userId || "chrome-extension-user";
     const accessToken = data.access_token;
+    const memoryEnabled = data.memory_enabled !== false; // Default to true if not set
 
     if (!apiKey && !accessToken) {
       console.error('No API Key or Access Token found');
+      return;
+    }
+
+    if (!memoryEnabled) {
+      console.log('Memory is disabled. Skipping API calls.');
+      if (clickSendButton) {
+        clickSendButtonWithDelay();
+      }
       return;
     }
 
@@ -129,14 +135,12 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
     const responseData = await searchResponse.json();
     const inputElement = getTextarea();
     if (inputElement) {
-      // Remove everything after the specified line in lastInputValue
       const memoryPrefix = "Here is some of my preferences/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):";
       const prefixIndex = lastInputValue.indexOf(memoryPrefix);
       if (prefixIndex !== -1) {
         lastInputValue = lastInputValue.substring(0, prefixIndex).trim();
       }
       const memories = responseData.map((item) => item.memory);
-      const providers = responseData.map((item) => (item.metadata && item.metadata.provider) ? item.metadata.provider : '');
       if (memories.length > 0) {
         let currentContent = lastInputValue.trim();
         const memInfoRegex = /\s*Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):[\s\S]*$/;
@@ -152,14 +156,7 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
       }
 
       if (clickSendButton) {
-        setTimeout(() => {
-          const sendButton = document.querySelector('button[aria-label="Submit"]');
-          if (sendButton) {
-            sendButton.click();
-          } else {
-            console.error("Send button not found");
-          }
-        }, 0);
+        clickSendButtonWithDelay();
       }
     } else {
       console.error("Input element not found");
@@ -201,6 +198,17 @@ function setInputValue(inputElement, value) {
     lastInputValue = value;
     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
   }
+}
+
+function clickSendButtonWithDelay() {
+  setTimeout(() => {
+    const sendButton = document.querySelector('button[aria-label="Submit"]');
+    if (sendButton) {
+      sendButton.click();
+    } else {
+      console.error("Send button not found");
+    }
+  }, 0);
 }
 
 function initializeMem0Integration() {
