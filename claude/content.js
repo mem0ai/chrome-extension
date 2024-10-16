@@ -252,7 +252,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
 
             if (inputElement) {
             const memories = responseData.map((item) => item.memory);
-
+            const providers = responseData.map((item) => (item.metadata && item.metadata.provider) ? item.metadata.provider : '');
             if (memories.length > 0) {
                 let currentContent =
                 inputElement.tagName.toLowerCase() === "div"
@@ -314,7 +314,10 @@ async function handleMem0Click(popup, clickSendButton = false) {
                 body: JSON.stringify({
                     messages: messages,
                     user_id: userId,
-                    infer: true
+                    infer: true,
+                    metadata: {
+                        provider: "Claude"
+                    }
                 })
             }).then(response => {
                 if (!response.ok) {
