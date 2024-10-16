@@ -2,8 +2,13 @@ let lastInputValue = '';
 let inputObserver = null;
 let isEnterKeyPressed = false;
 
+function getTextarea() {
+  return document.querySelector('textarea[placeholder="You ask, we answer..."]') ||
+         document.querySelector('textarea[placeholder="Ask follow-up"]');
+}
+
 function setupInputObserver() {
-  const textarea = document.querySelector('textarea[placeholder="Ask follow-up"]');
+  const textarea = getTextarea();
   if (!textarea) {
     setTimeout(setupInputObserver, 500);
     return;
@@ -13,7 +18,6 @@ function setupInputObserver() {
     for (let mutation of mutations) {
       if (mutation.type === 'characterData' || mutation.type === 'childList') {
         lastInputValue = textarea.value;
-        console.log("Input updated:", lastInputValue);
       }
     }
   });
@@ -26,19 +30,16 @@ function setupInputObserver() {
 
   textarea.addEventListener('input', function() {
     lastInputValue = this.value;
-    console.log("Input event:", lastInputValue);
   });
 
   // Add this new event listener
   textarea.addEventListener('keypress', function(event) {
-    console.log("Key pressed:", event.key);
   });
 
   textarea.addEventListener('keydown', function(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
       isEnterKeyPressed = true;
       lastInputValue = this.value;
-      console.log("Enter pressed, captured:", lastInputValue);
     }
   });
 
@@ -51,11 +52,10 @@ function setupInputObserver() {
 
 function handleEnterKey(event) {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
-    const textarea = document.querySelector('textarea[placeholder="Ask follow-up"]');
+    const textarea = getTextarea();
     if (textarea && document.activeElement === textarea) {
       // Get the current value directly from the textarea
       const capturedText = textarea.value.trim();
-      console.log("Processing captured text:", capturedText);
 
       if (capturedText) {
         event.preventDefault();
@@ -68,8 +68,8 @@ function handleEnterKey(event) {
 }
 
 async function handleMem0Processing(capturedText, clickSendButton = false) {
+  const textarea = getTextarea();
   let message = capturedText || textarea.value.trim();
-  console.log("Processing message:", message);
 
   if (!message) {
     console.error("No input message found");
@@ -127,8 +127,14 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
     }
 
     const responseData = await searchResponse.json();
-    const inputElement = document.querySelector('textarea[placeholder="Ask follow-up"]');
+    const inputElement = getTextarea();
     if (inputElement) {
+      // Remove everything after the specified line in lastInputValue
+      const memoryPrefix = "Here is some of my preferences/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):";
+      const prefixIndex = lastInputValue.indexOf(memoryPrefix);
+      if (prefixIndex !== -1) {
+        lastInputValue = lastInputValue.substring(0, prefixIndex).trim();
+      }
       const memories = responseData.map((item) => item.memory);
       const providers = responseData.map((item) => (item.metadata && item.metadata.provider) ? item.metadata.provider : '');
       if (memories.length > 0) {
