@@ -125,6 +125,20 @@ let observer;
 // }
 
 async function handleMem0Click(clickSendButton = false) {
+  const memoryEnabled = await getMemoryEnabledState();
+  if (!memoryEnabled) {
+    // If memory is disabled, just click the send button if requested
+    if (clickSendButton) {
+      const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+      if (sendButton) {
+        sendButton.click();
+      } else {
+        console.error("Send button not found");
+      }
+    }
+    return;
+  }
+
   // setButtonLoadingState(true);
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
@@ -429,72 +443,78 @@ function addSyncButton() {
 }
 
 function handleSyncClick() {
+  getMemoryEnabledState().then(memoryEnabled => {
+    if (!memoryEnabled) {
+      showSyncPopup(document.querySelector("#sync-button"), "Memory is disabled");
+      return;
+    }
 
-  const table = document.querySelector(
-    "table.w-full.border-separate.border-spacing-0"
-  );
-  const syncButton = document.querySelector("#sync-button");
+    const table = document.querySelector(
+      "table.w-full.border-separate.border-spacing-0"
+    );
+    const syncButton = document.querySelector("#sync-button");
 
-  if (table && syncButton) {
-    const rows = table.querySelectorAll("tbody tr");
-    let memories = [];
+    if (table && syncButton) {
+      const rows = table.querySelectorAll("tbody tr");
+      let memories = [];
 
-    // Change sync button state to loading
-    setSyncButtonLoadingState(true);
+      // Change sync button state to loading
+      setSyncButtonLoadingState(true);
 
-    let syncedCount = 0;
-    const totalCount = rows.length;
+      let syncedCount = 0;
+      const totalCount = rows.length;
 
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll("td");
-      if (cells.length >= 1) {
-        const content = cells[0]
-          .querySelector("div.whitespace-pre-wrap")
-          .textContent.trim();
+      rows.forEach((row) => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length >= 1) {
+          const content = cells[0]
+            .querySelector("div.whitespace-pre-wrap")
+            .textContent.trim();
 
-        const memory = {
-          role: "user",
-          content: `Remember this about me: ${content}`,
-          timestamp: new Date().toISOString(),
-        };
+          const memory = {
+            role: "user",
+            content: `Remember this about me: ${content}`,
+            timestamp: new Date().toISOString(),
+          };
 
-        memories.push(memory);
+          memories.push(memory);
 
-        sendMemoryToMem0(memory)
-          .then(() => {
-            syncedCount++;
-            if (syncedCount === totalCount) {
-              showSyncPopup(syncButton, `${syncedCount} memories synced`);
-              setSyncButtonLoadingState(false);
-            }
-          })
-          .catch((error) => {
-            Sentry.captureException(error);
-            if (syncedCount === totalCount) {
-              showSyncPopup(
-                syncButton,
-                `${syncedCount}/${totalCount} memories synced`
-              );
-              setSyncButtonLoadingState(false);
-            }
-          });
-      }
-    });
-
-    sendMemoriesToMem0(memories)
-      .then(() => {
-        showSyncPopup(syncButton, `${memories.length} memories synced`);
-        setSyncButtonLoadingState(false);
-      })
-      .catch((error) => {
-        console.error("Error syncing memories:", error);
-        showSyncPopup(syncButton, "Error syncing memories");
-        setSyncButtonLoadingState(false);
+          sendMemoryToMem0(memory)
+            .then(() => {
+              syncedCount++;
+              if (syncedCount === totalCount) {
+                showSyncPopup(syncButton, `${syncedCount} memories synced`);
+                setSyncButtonLoadingState(false);
+              }
+            })
+            .catch((error) => {
+              Sentry.captureException(error);
+              if (syncedCount === totalCount) {
+                showSyncPopup(
+                  syncButton,
+                  `${syncedCount}/${totalCount} memories synced`
+                );
+                setSyncButtonLoadingState(false);
+              }
+            });
+        }
       });
-  } else {
-    console.error("Table or Sync button not found");
-    Sentry.captureMessage("Table or Sync button not found", "error");
-  }
+
+      sendMemoriesToMem0(memories)
+        .then(() => {
+          showSyncPopup(syncButton, `${memories.length} memories synced`);
+          setSyncButtonLoadingState(false);
+        })
+        .catch((error) => {
+          console.error("Error syncing memories:", error);
+          showSyncPopup(syncButton, "Error syncing memories");
+          setSyncButtonLoadingState(false);
+        });
+    } else {
+      console.error("Table or Sync button not found");
+      Sentry.captureMessage("Table or Sync button not found", "error");
+    }
+  });
 }
 
 // New function to send memories in batch
@@ -663,29 +683,44 @@ function addEnterKeyInterception() {
   if (inputElement && !inputElement.dataset.enterKeyIntercepted) {
     inputElement.dataset.enterKeyIntercepted = 'true';
 
-    inputElement.addEventListener("keydown", function(event) {
+    inputElement.addEventListener("keydown", async function(event) {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         event.stopPropagation();
 
-        // Get the input text
-        const inputText = inputElement.tagName.toLowerCase() === 'div'
-          ? inputElement.textContent.trim()
-          : inputElement.value.trim();
-        // Call handleMem0Click
-        // const popup = document.querySelector(".mem0-popup");
-        handleMem0Click(true)
-          .then(() => {
-            // If you want to submit the message after Mem0 processing:
-            // const sendButton = document.querySelector('button[aria-label="Send prompt"]');
-            // if (sendButton) sendButton.click();
-          })
-          .catch((error) => {
-            console.error("Error in Mem0 processing:", error);
-          });
+        const memoryEnabled = await getMemoryEnabledState();
+        if (memoryEnabled) {
+          // Call handleMem0Click
+          handleMem0Click(true)
+            .then(() => {
+              // If you want to submit the message after Mem0 processing:
+              // const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+              // if (sendButton) sendButton.click();
+            })
+            .catch((error) => {
+              console.error("Error in Mem0 processing:", error);
+            });
+        } else {
+          // If memory is disabled, just click the send button
+          const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+          if (sendButton) {
+            sendButton.click();
+          } else {
+            console.error("Send button not found");
+          }
+        }
       }
     }, true);
   }
+}
+
+// Add this new function to get the memory_enabled state
+function getMemoryEnabledState() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(['memory_enabled'], function(result) {
+      resolve(result.memory_enabled !== false); // Default to true if not set
+    });
+  });
 }
 
 initializeMem0Integration();
