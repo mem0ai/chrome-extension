@@ -3,137 +3,137 @@ let isProcessingMem0 = false;
 // Initialize the MutationObserver variable
 let observer;
 
-function createPopup(container) {
-  const popup = document.createElement("div");
-  popup.className = "mem0-popup";
-  popup.style.cssText = `
-        display: none;
-        position: absolute;
-        background-color: #171717;
-        color: white;
-        padding: 6px 8px;
-        border-radius: 6px;
-        font-size: 12px;
-        z-index: 10000;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        margin-bottom: 11px;
-        white-space: nowrap;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    `;
-  container.appendChild(popup);
-  return popup;
-}
+// function createPopup(container) {
+//   const popup = document.createElement("div");
+//   popup.className = "mem0-popup";
+//   popup.style.cssText = `
+//         display: none;
+//         position: absolute;
+//         background-color: #171717;
+//         color: white;
+//         padding: 6px 8px;
+//         border-radius: 6px;
+//         font-size: 12px;
+//         z-index: 10000;
+//         bottom: 100%;
+//         left: 50%;
+//         transform: translateX(-50%);
+//         margin-bottom: 11px;
+//         white-space: nowrap;
+//         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+//     `;
+//   container.appendChild(popup);
+//   return popup;
+// }
 
-function addMem0Button() {
-  const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+// function addMem0Button() {
+//   const sendButton = document.querySelector('button[aria-label="Send prompt"]');
 
-  if (sendButton && !document.querySelector("#mem0-button")) {
-    const sendButtonContainer = sendButton.parentElement.parentElement;
+//   if (sendButton && !document.querySelector("#mem0-button")) {
+//     const sendButtonContainer = sendButton.parentElement.parentElement;
 
-    const mem0ButtonContainer = document.createElement("div");
-    mem0ButtonContainer.style.position = "relative";
-    mem0ButtonContainer.style.display = "inline-block";
+//     const mem0ButtonContainer = document.createElement("div");
+//     mem0ButtonContainer.style.position = "relative";
+//     mem0ButtonContainer.style.display = "inline-block";
 
-    const mem0Button = document.createElement("img");
-    mem0Button.id = "mem0-button";
-    mem0Button.src = chrome.runtime.getURL("icons/mem0-claude-icon-purple.png");
-    mem0Button.style.width = "20px";
-    mem0Button.style.height = "20px";
-    mem0Button.style.cursor = "pointer";
-    mem0Button.style.padding = "8px";
-    mem0Button.style.borderRadius = "5px";
-    mem0Button.style.transition = "filter 0.3s ease, opacity 0.3s ease";
-    mem0Button.style.boxSizing = "content-box";
-    mem0Button.style.marginBottom = "1px";
+//     const mem0Button = document.createElement("img");
+//     mem0Button.id = "mem0-button";
+//     mem0Button.src = chrome.runtime.getURL("icons/mem0-claude-icon-purple.png");
+//     mem0Button.style.width = "20px";
+//     mem0Button.style.height = "20px";
+//     mem0Button.style.cursor = "pointer";
+//     mem0Button.style.padding = "8px";
+//     mem0Button.style.borderRadius = "5px";
+//     mem0Button.style.transition = "filter 0.3s ease, opacity 0.3s ease";
+//     mem0Button.style.boxSizing = "content-box";
+//     mem0Button.style.marginBottom = "1px";
 
-    const popup = createPopup(mem0ButtonContainer);
+//     const popup = createPopup(mem0ButtonContainer);
 
-    mem0Button.addEventListener("click", () => handleMem0Click(popup));
+//     mem0Button.addEventListener("click", () => handleMem0Click(popup));
 
-    mem0Button.addEventListener("mouseenter", () => {
-      if (!mem0Button.disabled) {
-        mem0Button.style.filter = "brightness(70%)";
-        tooltip.style.visibility = "visible";
-        tooltip.style.opacity = "1";
-      }
-    });
-    mem0Button.addEventListener("mouseleave", () => {
-      mem0Button.style.filter = "none";
-      tooltip.style.visibility = "hidden";
-      tooltip.style.opacity = "0";
-    });
+//     mem0Button.addEventListener("mouseenter", () => {
+//       if (!mem0Button.disabled) {
+//         mem0Button.style.filter = "brightness(70%)";
+//         tooltip.style.visibility = "visible";
+//         tooltip.style.opacity = "1";
+//       }
+//     });
+//     mem0Button.addEventListener("mouseleave", () => {
+//       mem0Button.style.filter = "none";
+//       tooltip.style.visibility = "hidden";
+//       tooltip.style.opacity = "0";
+//     });
 
-    const tooltip = document.createElement("div");
-    tooltip.textContent = "Add related memories";
-    tooltip.style.visibility = "hidden";
-    tooltip.style.backgroundColor = "black";
-    tooltip.style.color = "white";
-    tooltip.style.textAlign = "center";
-    tooltip.style.borderRadius = "4px";
-    tooltip.style.padding = "3px 6px";
-    tooltip.style.position = "absolute";
-    tooltip.style.zIndex = "1";
-    tooltip.style.top = "calc(100% + 5px)";
-    tooltip.style.left = "50%";
-    tooltip.style.transform = "translateX(-50%)";
-    tooltip.style.whiteSpace = "nowrap";
-    tooltip.style.opacity = "0";
-    tooltip.style.transition = "opacity 0.3s";
-    tooltip.style.fontSize = "12px";
+//     const tooltip = document.createElement("div");
+//     tooltip.textContent = "Add related memories";
+//     tooltip.style.visibility = "hidden";
+//     tooltip.style.backgroundColor = "black";
+//     tooltip.style.color = "white";
+//     tooltip.style.textAlign = "center";
+//     tooltip.style.borderRadius = "4px";
+//     tooltip.style.padding = "3px 6px";
+//     tooltip.style.position = "absolute";
+//     tooltip.style.zIndex = "1";
+//     tooltip.style.top = "calc(100% + 5px)";
+//     tooltip.style.left = "50%";
+//     tooltip.style.transform = "translateX(-50%)";
+//     tooltip.style.whiteSpace = "nowrap";
+//     tooltip.style.opacity = "0";
+//     tooltip.style.transition = "opacity 0.3s";
+//     tooltip.style.fontSize = "12px";
 
-    mem0ButtonContainer.appendChild(mem0Button);
-    mem0ButtonContainer.appendChild(tooltip);
+//     mem0ButtonContainer.appendChild(mem0Button);
+//     mem0ButtonContainer.appendChild(tooltip);
 
-    // Insert the mem0Button before the sendButton
-    sendButtonContainer.insertBefore(
-      mem0ButtonContainer,
-      sendButtonContainer.children[1]
-    );
+//     // Insert the mem0Button before the sendButton
+//     sendButtonContainer.insertBefore(
+//       mem0ButtonContainer,
+//       sendButtonContainer.children[1]
+//     );
 
-    // Function to update button states
-    function updateButtonStates() {
-      const inputElement =
-        document.querySelector('div[contenteditable="true"]') ||
-        document.querySelector("textarea");
-      const hasText =
-        inputElement && inputElement.textContent.trim().length > 0;
+//     // Function to update button states
+//     function updateButtonStates() {
+//       const inputElement =
+//         document.querySelector('div[contenteditable="true"]') ||
+//         document.querySelector("textarea");
+//       const hasText =
+//         inputElement && inputElement.textContent.trim().length > 0;
 
-      mem0Button.disabled = !hasText;
+//       mem0Button.disabled = !hasText;
 
-      if (hasText) {
-        mem0Button.style.opacity = "1";
-        mem0Button.style.pointerEvents = "auto";
-      } else {
-        mem0Button.style.opacity = "0.5";
-        mem0Button.style.pointerEvents = "none";
-      }
-    }
+//       if (hasText) {
+//         mem0Button.style.opacity = "1";
+//         mem0Button.style.pointerEvents = "auto";
+//       } else {
+//         mem0Button.style.opacity = "0.5";
+//         mem0Button.style.pointerEvents = "none";
+//       }
+//     }
 
-    // Initial update
-    updateButtonStates();
+//     // Initial update
+//     updateButtonStates();
 
-    // Listen for input changes
-    const inputElement =
-      document.querySelector('div[contenteditable="true"]') ||
-      document.querySelector("textarea");
-    if (inputElement) {
-      inputElement.addEventListener("input", updateButtonStates);
-    }
-  }
-}
+//     // Listen for input changes
+//     const inputElement =
+//       document.querySelector('div[contenteditable="true"]') ||
+//       document.querySelector("textarea");
+//     if (inputElement) {
+//       inputElement.addEventListener("input", updateButtonStates);
+//     }
+//   }
+// }
 
-async function handleMem0Click(popup, clickSendButton = false) {
-  setButtonLoadingState(true);
+async function handleMem0Click(clickSendButton = false) {
+  // setButtonLoadingState(true);
   const inputElement =
     document.querySelector('div[contenteditable="true"]') ||
     document.querySelector("textarea");
   let message = getInputValue();
   if (!message) {
     console.error("No input message found");
-    showPopup(popup, "No input message found");
-    setButtonLoadingState(false);
+    // showPopup(popup, "No input message found");
+    // setButtonLoadingState(false);
     return;
   }
 
@@ -165,9 +165,9 @@ async function handleMem0Click(popup, clickSendButton = false) {
         const accessToken = data.access_token;
 
         if (!apiKey && !accessToken) {
-          showPopup(popup, "No API Key or Access Token found");
+          // showPopup(popup, "No API Key or Access Token found");
           isProcessingMem0 = false;
-          setButtonLoadingState(false);
+          // setButtonLoadingState(false);
           return;
         }
 
@@ -242,13 +242,13 @@ async function handleMem0Click(popup, clickSendButton = false) {
                 inputElement.value = message;
             }
             inputElement.dispatchEvent(new Event("input", { bubbles: true }));
-            showPopup(popup, "No memories found");
+            // showPopup(popup, "No memories found");
             }
         } else {
-            showPopup(popup, "No input field found to update");
+            // showPopup(popup, "No input field found to update");
         }
     
-        setButtonLoadingState(false);
+        // setButtonLoadingState(false);
 
 
         if (clickSendButton) {
@@ -276,13 +276,11 @@ async function handleMem0Click(popup, clickSendButton = false) {
         }),
         }).catch((error) => {
         console.error("Error adding memory:", error);
-        Sentry.captureException("Error adding memory");
         });
 
   } catch (error) {
     console.error("Error:", error);
-    Sentry.captureException("Error in handleMem0Click");
-    setButtonLoadingState(false);
+    // setButtonLoadingState(false);
     throw error; // Rethrow the error to be caught in the calling function
   } finally {
     isProcessingMem0 = false;
@@ -630,7 +628,7 @@ function sendMemoryToMem0(memory) {
 
 function initializeMem0Integration() {
   document.addEventListener("DOMContentLoaded", () => {
-    addMem0Button();
+    // addMem0Button();
     addSyncButton();
     addEnterKeyInterception();
   });
@@ -638,19 +636,14 @@ function initializeMem0Integration() {
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
-      const popup = document.querySelector(".mem0-popup");
-      if (popup) {
-        (async () => {
-          await handleMem0Click(popup, true);
-        })();
-      } else {
-        console.error("Mem0 popup not found");
-      }
+      (async () => {
+        await handleMem0Click(true);
+      })();
     }
   });
 
   observer = new MutationObserver(() => {
-    addMem0Button();
+    // addMem0Button();
     addSyncButton();
   });
 
@@ -680,20 +673,16 @@ function addEnterKeyInterception() {
           ? inputElement.textContent.trim()
           : inputElement.value.trim();
         // Call handleMem0Click
-        const popup = document.querySelector(".mem0-popup");
-        if (popup) {
-          handleMem0Click(popup, true)
-            .then(() => {
-              // If you want to submit the message after Mem0 processing:
-              // const sendButton = document.querySelector('button[aria-label="Send prompt"]');
-              // if (sendButton) sendButton.click();
-            })
-            .catch((error) => {
-              console.error("Error in Mem0 processing:", error);
-            });
-        } else {
-          console.error("Mem0 popup not found");
-        }
+        // const popup = document.querySelector(".mem0-popup");
+        handleMem0Click(true)
+          .then(() => {
+            // If you want to submit the message after Mem0 processing:
+            // const sendButton = document.querySelector('button[aria-label="Send prompt"]');
+            // if (sendButton) sendButton.click();
+          })
+          .catch((error) => {
+            console.error("Error in Mem0 processing:", error);
+          });
       }
     }, true);
   }
