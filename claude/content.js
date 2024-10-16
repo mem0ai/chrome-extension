@@ -187,7 +187,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
     return;
   }
 
-  message = message.split("Here is some more information about me:")[0];
+  message = message.split("Here is some of my preferences/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):")[0];
 
   if (isProcessingMem0) {
     return;
@@ -260,7 +260,7 @@ async function handleMem0Click(popup, clickSendButton = false) {
                     : inputElement.value;
 
                 const memInfoRegex =
-                /<p><strong>Here is some more information about me:<\/strong><\/p>([\s\S]*?)(?=<p><strong>|$)/;
+                /<p><strong>Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):<\/strong><\/p>([\s\S]*?)(?=<p><strong>|$)/;
                 const memInfoMatch = currentContent.match(memInfoRegex);
 
                 // Prepare new memory content
@@ -273,11 +273,11 @@ async function handleMem0Click(popup, clickSendButton = false) {
                 // Replace existing memory information
                 currentContent = currentContent.replace(
                     memInfoRegex,
-                    `<p><strong>Here is some more information about me:</strong></p>${memoryContent}`
+                    `<p><strong>Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):</strong></p>${memoryContent}`
                 );
                 } else {
                 // Append new memory information
-                currentContent += `<p><br></p><p><strong>Here is some more information about me:</strong></p>${memoryContent}`;
+                currentContent += `<p><br></p><p><strong>Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):</strong></p>${memoryContent}`;
                 }
 
                 if (inputElement.tagName.toLowerCase() === "div") {
