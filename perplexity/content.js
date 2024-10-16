@@ -130,6 +130,7 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
     const inputElement = document.querySelector('textarea[placeholder="Ask follow-up"]');
     if (inputElement) {
       const memories = responseData.map((item) => item.memory);
+      const providers = responseData.map((item) => (item.metadata && item.metadata.provider) ? item.metadata.provider : '');
       if (memories.length > 0) {
         let currentContent = lastInputValue.trim();
         const memInfoRegex = /\s*Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):[\s\S]*$/;
@@ -169,6 +170,9 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
         messages: messages,
         user_id: userId,
         infer: true,
+        metadata: {
+          provider: "Perplexity"
+        }
       }),
     })
       .then((response) => {

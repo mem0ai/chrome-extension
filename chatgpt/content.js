@@ -222,6 +222,7 @@ async function handleMem0Click(clickSendButton = false) {
 
         if (inputElement) {
             const memories = responseData.map((item) => item.memory);
+            const providers = responseData.map((item) => (item.metadata && item.metadata.provider) ? item.metadata.provider : '');
 
             if (memories.length > 0) {
             let currentContent =
@@ -287,6 +288,9 @@ async function handleMem0Click(clickSendButton = false) {
             messages: messages,
             user_id: userId,
             infer: true,
+            metadata: {
+              provider: "ChatGPT",
+            },
         }),
         }).catch((error) => {
         console.error("Error adding memory:", error);
@@ -537,6 +541,9 @@ function sendMemoriesToMem0(memories) {
               messages: memories,
               user_id: items.userId,
               infer: true,
+              metadata: {
+                provider: "ChatGPT",
+              },
             }),
           })
             .then((response) => {
@@ -627,6 +634,9 @@ function sendMemoryToMem0(memory) {
               messages: [{ content: memory.content, role: "user" }],
               user_id: items.userId,
               infer: true,
+              metadata: {
+                provider: "ChatGPT",
+              },
             }),
           })
             .then((response) => {
