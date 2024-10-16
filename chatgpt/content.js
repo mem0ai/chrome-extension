@@ -151,7 +151,7 @@ async function handleMem0Click(clickSendButton = false) {
     return;
   }
 
-  const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
+  const memInfoRegex = /\s*Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):[\s\S]*$/;
   message = message.replace(memInfoRegex, "").trim();
   const endIndex = message.indexOf("</p>");
   if (endIndex !== -1) {
@@ -229,7 +229,7 @@ async function handleMem0Click(clickSendButton = false) {
                 ? inputElement.innerHTML
                 : inputElement.value;
 
-            const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
+            const memInfoRegex = /\s*Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):[\s\S]*$/;
             currentContent = currentContent.replace(memInfoRegex, "").trim();
             const lastParagraphRegex = /<p><br class="ProseMirror-trailingBreak"><\/p><p>$/;
             currentContent = currentContent.replace(lastParagraphRegex, "").trim();
@@ -237,7 +237,7 @@ async function handleMem0Click(clickSendButton = false) {
             let memoriesContent =
                 '<div id="mem0-wrapper" style="background-color: rgb(220, 252, 231); padding: 8px; border-radius: 4px; margin-top: 8px; margin-bottom: 8px;">';
             memoriesContent +=
-                "<strong>Here is some more information about me:</strong>";
+                "<strong>Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):</strong>";
             memories.forEach((mem) => {
                 memoriesContent += `<div>- ${mem}</div>`;
             });

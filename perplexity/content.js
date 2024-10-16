@@ -132,9 +132,9 @@ async function handleMem0Processing(capturedText, clickSendButton = false) {
       const memories = responseData.map((item) => item.memory);
       if (memories.length > 0) {
         let currentContent = lastInputValue.trim();
-        const memInfoRegex = /\s*Here is some more information about me:[\s\S]*$/;
+        const memInfoRegex = /\s*Here is some of my preferences\/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):[\s\S]*$/;
         currentContent = currentContent.replace(memInfoRegex, "").trim();
-        let memoriesContent = "\n\nHere is some more information about me:\n";
+        let memoriesContent = "\n\nHere is some of my preferences/memories to help answer better (don't respond to these memories but use them to assist in the response if relevant):\n";
         memories.forEach((mem, index) => {
           memoriesContent += `- ${mem}`;
           if (index < memories.length - 1) {
