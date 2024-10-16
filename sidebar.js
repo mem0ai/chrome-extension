@@ -22,26 +22,49 @@
       // If sidebar exists, toggle its visibility
       sidebarVisible = !sidebarVisible;
       sidebar.style.right = sidebarVisible ? "0px" : "-450px";
-      
+
       // Add or remove click listener based on sidebar visibility
       if (sidebarVisible) {
-        document.addEventListener('click', handleOutsideClick);
+        document.addEventListener("click", handleOutsideClick);
+        document.addEventListener("keydown", handleEscapeKey); // Add this line
         fetchAndDisplayMemories(); // Fetch and display memories when sidebar is opened
       } else {
-        document.removeEventListener('click', handleOutsideClick);
+        document.removeEventListener("click", handleOutsideClick);
+        document.removeEventListener("keydown", handleEscapeKey); // Add this line
       }
     } else {
       // If sidebar doesn't exist, create it
       createSidebar();
       sidebarVisible = true;
-      document.addEventListener('click', handleOutsideClick);
+      document.addEventListener("click", handleOutsideClick);
+      document.addEventListener("keydown", handleEscapeKey); // Add this line
       fetchAndDisplayMemories(); // Fetch and display memories when sidebar is created
+    }
+  }
+
+  // Add this new function
+  function handleEscapeKey(event) {
+    if (event.key === "Escape") {
+      const searchInput = document.querySelector(".search-memory");
+      const addInput = document.querySelector(".add-memory");
+
+      if (searchInput) {
+        closeSearchInput();
+      } else if (addInput) {
+        closeAddMemoryInput();
+      } else {
+        toggleSidebar();
+      }
     }
   }
 
   function handleOutsideClick(event) {
     let sidebar = document.getElementById("mem0-sidebar");
-    if (sidebar && !sidebar.contains(event.target) && !event.target.closest('.mem0-toggle-btn')) {
+    if (
+      sidebar &&
+      !sidebar.contains(event.target) &&
+      !event.target.closest(".mem0-toggle-btn")
+    ) {
       toggleSidebar();
     }
   }
@@ -156,24 +179,33 @@
     const logoutBtn = ellipsisMenu.querySelector("#logoutBtn");
     logoutBtn.addEventListener("click", logout);
 
-    // Create shortcut info and append it after the scroll area
-    const shortcutInfo = document.createElement("div");
-    shortcutInfo.className = "shortcut-info";
-    shortcutInfo.innerHTML = `
-        <span>Mem0 Shortcut: </span>
-        <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="12px" viewBox="0 0 24 24" width="12px" fill="#999999">
-          <g>
-            <rect fill="none" height="24" width="24"/>
-          </g>
-          <g>
-            <g>
-              <path d="M17.5,3C15.57,3,14,4.57,14,6.5V8h-4V6.5C10,4.57,8.43,3,6.5,3S3,4.57,3,6.5S4.57,10,6.5,10H8v4H6.5 C4.57,14,3,15.57,3,17.5S4.57,21,6.5,21s3.5-1.57,3.5-3.5V16h4v1.5c0,1.93,1.57,3.5,3.5,3.5s3.5-1.57,3.5-3.5S19.43,14,17.5,14H16 v-4h1.5c1.93,0,3.5-1.57,3.5-3.5S19.43,3,17.5,3L17.5,3z M16,8V6.5C16,5.67,16.67,5,17.5,5S19,5.67,19,6.5S18.33,8,17.5,8H16L16,8 z M6.5,8C5.67,8,5,7.33,5,6.5S5.67,5,6.5,5S8,5.67,8,6.5V8H6.5L6.5,8z M10,14v-4h4v4H10L10,14z M17.5,19c-0.83,0-1.5-0.67-1.5-1.5 V16h1.5c0.83,0,1.5,0.67,1.5,1.5S18.33,19,17.5,19L17.5,19z M6.5,19C5.67,19,5,18.33,5,17.5S5.67,16,6.5,16H8v1.5 C8,18.33,7.33,19,6.5,19L6.5,19z"/>
-            </g>
-          </g>
-        </svg>
-        <span> + m</span>
-      `;
-    sidebarContainer.appendChild(shortcutInfo);
+    // Replace the existing footer-toggle div with this updated version
+    const footerToggle = document.createElement("div");
+    footerToggle.className = "footer-toggle";
+    footerToggle.innerHTML = `
+      <span class="shortcut-text">Mem0 Shortcut: ⌘ + m</span>
+      <div class="toggle-container">
+        <span class="toggle-text">Memory enabled</span>
+        <label class="switch">
+          <input type="checkbox" id="mem0Toggle" checked>
+          <span class="slider round"></span>
+        </label>
+      </div>
+    `;
+    sidebarContainer.appendChild(footerToggle);
+
+    // Add event listener for the toggle
+    const toggleCheckbox = footerToggle.querySelector("#mem0Toggle");
+    const toggleText = footerToggle.querySelector(".toggle-text");
+    toggleCheckbox.addEventListener("change", function () {
+      toggleText.textContent = this.checked
+        ? "Memory enabled"
+        : "Memory disabled";
+      chrome.runtime.sendMessage({
+        action: "toggleMem0",
+        enabled: this.checked,
+      });
+    });
 
     document.body.appendChild(sidebarContainer);
 
@@ -183,7 +215,7 @@
     }, 0);
 
     // Prevent clicks within the sidebar from closing it
-    sidebarContainer.addEventListener('click', (event) => {
+    sidebarContainer.addEventListener("click", (event) => {
       event.stopPropagation();
     });
 
@@ -421,6 +453,22 @@
   }
 
   function deleteMemory(memoryId, memoryElement) {
+    const deleteBtn = memoryElement.querySelector(".delete-btn");
+    const originalContent = deleteBtn.innerHTML;
+
+    // Replace delete icon with a smaller loading spinner
+    deleteBtn.innerHTML = `
+      <div style="
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        animation: spin 1s linear infinite;
+      "></div>
+    `;
+    deleteBtn.disabled = true;
+
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
       const headers = getHeaders(data.apiKey, data.access_token);
       fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
@@ -433,18 +481,24 @@
             const scrollArea = document.querySelector(".scroll-area");
             if (scrollArea.children.length === 0) {
               scrollArea.innerHTML = `
-                  <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
-                    <p>No memories found</p>
-                    <p>Click the + button to add a new memory or use Mem0 with the chatbot of your choice.</p>
-                  </div>
-                `;
+                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0px 15px 15px 15px; text-align: center;">
+          <p>No memories found</p><br/>
+          <p style="color: grey;">Click the + button to add a new memory or use Mem0 with the AI chatbot of your choice.</p>
+        </div>
+              `;
             }
           } else {
             console.error("Failed to delete memory");
+            // Restore original delete button
+            deleteBtn.innerHTML = originalContent;
+            deleteBtn.disabled = false;
           }
         })
         .catch((error) => {
           console.error("Error deleting memory:", error);
+          // Restore original delete button
+          deleteBtn.innerHTML = originalContent;
+          deleteBtn.disabled = false;
         });
     });
   }
@@ -493,12 +547,14 @@
         filterMemories(searchTerm);
       });
 
-      // Add event listener for the Escape key
-      searchMemorySpan.addEventListener("keydown", function (event) {
+      // Remove the existing event listener for the Escape key
+      searchMemorySpan.removeEventListener("keydown", function (event) {
         if (event.key === "Escape") {
           closeSearchInput();
         }
       });
+
+      // The Escape key is now handled by the global handleEscapeKey function
 
       searchBtn.classList.add("active");
     }
@@ -582,8 +638,6 @@
           } else {
             closeAddMemoryInput();
           }
-        } else if (event.key === "Escape") {
-          closeAddMemoryInput();
         }
       });
 
@@ -1000,6 +1054,93 @@
           margin-bottom: 15px;
           padding-right: 5px;
         }
+
+        .footer-toggle {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 15px;
+          background-color: #f5f5f5;
+          position: sticky;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          width: 100%;
+          box-sizing: border-box;
+          font-size: 12px;
+          color: #666;
+        }
+
+        .shortcut-text {
+          flex-grow: 1;
+        }
+
+        .toggle-container {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .toggle-text {
+          font-size: 12px;
+          color: #666;
+        }
+
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 36px;
+          height: 20px;
+        }
+
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 2px;
+          bottom: 2px;
+          background-color: white;
+          transition: .4s;
+        }
+
+        input:checked + .slider {
+          background-color: #444; /* Dark gray for "on" state */
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px #444;
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(16px);
+        }
+
+        .slider.round {
+          border-radius: 20px;
+        }
+
+        .slider.round:before {
+          border-radius: 50%;
+        }
   `;
     document.head.appendChild(style);
   }
@@ -1040,7 +1181,7 @@
       const userId = data.userId || "chrome-extension-user";
       chrome.runtime.sendMessage({
         action: "openDashboard",
-        url: `https://app.mem0.ai/dashboard/user/${userId}`
+        url: `https://app.mem0.ai/dashboard/user/${userId}`,
       });
     });
   }
