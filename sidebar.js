@@ -205,6 +205,8 @@
         action: "toggleMem0",
         enabled: this.checked,
       });
+      // Update the memory_enabled state when the toggle changes
+      chrome.storage.sync.set({ memory_enabled: this.checked });
     });
 
     document.body.appendChild(sidebarContainer);
@@ -1182,6 +1184,15 @@
       chrome.runtime.sendMessage({
         action: "openDashboard",
         url: `https://app.mem0.ai/dashboard/user/${userId}`,
+      });
+    });
+  }
+
+  // Add this new function to get the memory_enabled state
+  function getMemoryEnabledState() {
+    return new Promise((resolve) => {
+      chrome.storage.sync.get(['memory_enabled'], function(result) {
+        resolve(result.memory_enabled !== false); // Default to true if not set
       });
     });
   }
