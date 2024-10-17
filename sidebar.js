@@ -1188,15 +1188,6 @@
     });
   }
 
-  // Add this new function to get the memory_enabled state
-  function getMemoryEnabledState() {
-    return new Promise((resolve) => {
-      chrome.storage.sync.get(['memory_enabled'], function(result) {
-        resolve(result.memory_enabled !== false); // Default to true if not set
-      });
-    });
-  }
-
   // Initialize the listener when the script loads
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeMem0Sidebar);
