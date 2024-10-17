@@ -305,37 +305,57 @@
                 .join("")}</div>`
             : "";
 
+        // Get the provider from metadata or use "Mem0" as default
+        const provider =
+          memoryItem.metadata && memoryItem.metadata.provider
+            ? memoryItem.metadata.provider.toLowerCase()
+            : "mem0";
+
         const iconPath = (iconName) =>
           chrome.runtime.getURL(`icons/${iconName}`);
+
+        // Define the icon mapping
+        const providerIcons = {
+          chatgpt: "chatgpt.png",
+          claude: "claude.png",
+          perplexity: "perplexity.png",
+          mem0: "mem0-claude-icon-purple.png",
+        };
+
+        // Get the appropriate icon or use the default
+        const providerIcon =
+          providerIcons[provider] || "mem0-claude-icon-purple.png";
+
         memoryElement.innerHTML = `
-            <div class="memory-content">
-              <div class="memory-top">
-                <span class="memory-text">${memoryItem.memory}</span>
-                <div class="memory-buttons">
-                  <button class="icon-button edit-btn" data-id="${
-                    memoryItem.id
-                  }">
-                    <img src="${iconPath(
-                      "edit.svg"
-                    )}" alt="Edit" class="svg-icon">
-                  </button>
-                  <button class="icon-button delete-btn" data-id="${
-                    memoryItem.id
-                  }">
-                    <img src="${iconPath(
-                      "delete.svg"
-                    )}" alt="Delete" class="svg-icon">
-                  </button>
-                </div>
-              </div>
-              <div class="memory-bottom">
-                <div class="memory-categories">
-                  ${categoryHtml}
-                </div>
-                <div class="memory-date">${formattedDate}</div>
+          <div class="memory-content">
+            <div class="memory-top">
+              <span class="memory-text">${memoryItem.memory}</span>
+              <div class="memory-buttons">
+                <button class="icon-button edit-btn" data-id="${memoryItem.id}">
+                  <img src="${iconPath(
+                    "edit.svg"
+                  )}" alt="Edit" class="svg-icon">
+                </button>
+                <button class="icon-button delete-btn" data-id="${
+                  memoryItem.id
+                }">
+                  <img src="${iconPath(
+                    "delete.svg"
+                  )}" alt="Delete" class="svg-icon">
+                </button>
               </div>
             </div>
-          `;
+            <div class="memory-bottom">
+              <div class="memory-categories">
+                <img src="${iconPath(
+                  providerIcon
+                )}" alt="${provider}" class="provider-icon" style="width: 16px; height: 16px; margin-right: 5px;">
+                ${categoryHtml}
+              </div>
+              <div class="memory-date">${formattedDate}</div>
+            </div>
+          </div>
+        `;
         scrollArea.appendChild(memoryElement);
 
         // Add event listeners for edit and delete buttons
@@ -678,6 +698,9 @@
             messages: [{ role: "user", content: newContent }],
             user_id: data.userId,
             infer: false,
+            metadata: {
+              provider: "Mem0", // Add this line to set the provider
+            },
           }),
         })
           .then((response) => response.json())
@@ -833,7 +856,7 @@
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 12px;
+          margin-bottom: 4px;
         }
         .memory-text {
           flex: 1;
@@ -858,6 +881,7 @@
           display: flex;
           flex-wrap: wrap;
           gap: 5px;
+          align-items: center; // Add this line
         }
         .category {
           font-size: 12px;
@@ -1142,6 +1166,14 @@
 
         .slider.round:before {
           border-radius: 50%;
+        }
+
+        .provider-icon {
+          width: 14px;
+          height: 14px;
+          vertical-align: middle;
+          margin-left: 0;
+          margin-top: 2px;
         }
   `;
     document.head.appendChild(style);
