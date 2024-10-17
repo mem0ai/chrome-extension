@@ -9,6 +9,30 @@ chrome.action.onClicked.addListener((tab) => {
   });
 });
 
+// Set memoryEnabled to true
+// Set memoryEnabled to true on extension load and page refresh
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.sync.set({ memory_enabled: true }, function() {
+    console.log('Memory enabled set to true on startup');
+  });
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    chrome.storage.sync.set({ memory_enabled: true }, function() {
+      console.log('Memory enabled set to true on page refresh');
+    });
+  }
+});
+
+// Initial setting when extension is installed or updated
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.sync.set({ memory_enabled: true }, function() {
+    console.log('Memory enabled set to true on install/update');
+  });
+});
+
+
 // Keep the existing message listener for opening dashboard
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "openDashboard") {

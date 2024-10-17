@@ -1,4 +1,5 @@
 let isProcessingMem0 = false;
+let memoryEnabled = true;
 
 function addMem0Button() {
   const sendButton = document.querySelector(
@@ -68,7 +69,11 @@ function addMem0Button() {
 
     const popup = createPopup(buttonContainer, "right");
     mem0Button.appendChild(mem0Icon);
-    mem0Button.addEventListener("click", () => handleMem0Click(popup));
+    mem0Button.addEventListener("click", () => {
+      if (memoryEnabled) {
+        handleMem0Click(popup);
+      }
+    });
 
     buttonContainer.appendChild(mem0Button);
 
@@ -122,7 +127,11 @@ function addMem0Button() {
     mem0Button.style.borderRadius = "5px";
     mem0Button.style.transition = "background-color 0.3s ease";
     mem0Button.style.boxSizing = "content-box";
-    mem0Button.addEventListener("click", () => handleMem0Click(popup));
+    mem0Button.addEventListener("click", () => {
+      if (memoryEnabled) {
+        handleMem0Click(popup);
+      }
+    });
 
     const popup = createPopup(buttonContainer, "top");
 
@@ -171,6 +180,8 @@ function addMem0Button() {
       screenshotButton.nextSibling
     );
   }
+
+  updateMem0ButtonState();
 }
 
 async function handleMem0Click(popup, clickSendButton = false) {
@@ -404,21 +415,40 @@ function getInputValue() {
   return inputElement ? inputElement.textContent || inputElement.value : null;
 }
 
-function initializeMem0Integration() {
+async function updateMemoryEnabled() {
+  memoryEnabled = await new Promise((resolve) => {
+    chrome.storage.sync.get("memory_enabled", function(data) {
+      resolve(data.memory_enabled);
+    });
+  });
+  updateMem0ButtonState();
+}
 
+function updateMem0ButtonState() {
+  const mem0Button = document.querySelector("#mem0-button");
+  if (mem0Button) {
+    mem0Button.disabled = !memoryEnabled;
+    mem0Button.style.opacity = memoryEnabled ? "1" : "0.5";
+    mem0Button.style.cursor = memoryEnabled ? "pointer" : "not-allowed";
+  }
+}
+
+function initializeMem0Integration() {
+  updateMemoryEnabled();
   addMem0Button();
 
   document.addEventListener("keydown", function (event) {
     if (event.ctrlKey && event.key === "m") {
       event.preventDefault();
-      const popup = document.querySelector(".mem0-popup");
-      if (popup) {
-        (async () => {
-          await handleMem0Click(popup, true);
-        })();
-      } else {
-        console.error("Mem0 popup not found");
-        Sentry.captureMessage("Mem0 popup not found", "error");
+      if (memoryEnabled) {
+        const popup = document.querySelector(".mem0-popup");
+        if (popup) {
+          (async () => {
+            await handleMem0Click(popup, true);
+          })();
+        } else {
+          console.error("Mem0 popup not found");
+        }
       }
     }
   });
@@ -432,6 +462,13 @@ function initializeMem0Integration() {
   });
   
   observer.observe(document.body, { childList: true, subtree: true });
+
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    console.log("changes", changes);
+    if (namespace === 'sync' && changes.memory_enabled) {
+      updateMemoryEnabled();
+    }
+  });
 }
 
 initializeMem0Integration();
