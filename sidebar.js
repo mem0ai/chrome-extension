@@ -347,10 +347,10 @@
             </div>
             <div class="memory-bottom">
               <div class="memory-categories">
-                ${categoryHtml}
                 <img src="${iconPath(
                   providerIcon
-                )}" alt="${provider}" class="provider-icon" style="width: 16px; height: 16px;">
+                )}" alt="${provider}" class="provider-icon" style="width: 16px; height: 16px; margin-right: 5px;">
+                ${categoryHtml}
               </div>
               <div class="memory-date">${formattedDate}</div>
             </div>
