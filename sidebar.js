@@ -678,9 +678,6 @@
             messages: [{ role: "user", content: newContent }],
             user_id: data.userId,
             infer: false,
-            metadata: {
-              "provider": "mem0-extension"
-            }
           }),
         })
           .then((response) => response.json())
