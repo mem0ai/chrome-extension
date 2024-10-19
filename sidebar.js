@@ -237,13 +237,17 @@
           })
             .then((response) => response.json())
             .then((data) => {
+              // Sort memories by created_at in descending order
+              data.sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+              );
               displayMemories(data);
               if (newMemory) {
                 const scrollArea = document.querySelector(".scroll-area");
                 if (scrollArea) {
-                  scrollArea.scrollTop = scrollArea.scrollHeight; // Scroll to the bottom
+                  scrollArea.scrollTop = 0; // Scroll to the top
                   // Highlight the new memory
-                  const newMemoryElement = scrollArea.lastElementChild;
+                  const newMemoryElement = scrollArea.firstElementChild;
                   if (newMemoryElement) {
                     newMemoryElement.classList.add("highlight");
                     newMemoryElement.scrollIntoView({ behavior: "smooth" });
@@ -856,7 +860,7 @@
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 4px;
+          
         }
         .memory-text {
           flex: 1;
