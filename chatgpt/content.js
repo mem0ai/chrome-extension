@@ -502,7 +502,6 @@ function handleSyncClick() {
               }
             })
             .catch((error) => {
-              Sentry.captureException(error);
               if (syncedCount === totalCount) {
                 showSyncPopup(
                   syncButton,
@@ -526,7 +525,6 @@ function handleSyncClick() {
         });
     } else {
       console.error("Table or Sync button not found");
-      Sentry.captureMessage("Table or Sync button not found", "error");
     }
   });
 }
@@ -660,7 +658,6 @@ function sendMemoryToMem0(memory) {
             })
             .catch((error) => reject(`Error sending memory to Mem0: ${error}`));
         } else {
-          Sentry.captureException("API Key/Access Token or User ID not set");
           reject("API Key/Access Token or User ID not set");
         }
       }

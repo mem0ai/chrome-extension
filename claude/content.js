@@ -360,7 +360,6 @@ async function handleMem0Click(popup, clickSendButton = false) {
     console.error("Error:", error);
     showPopup(popup, "Failed to send message to Mem0");
     setButtonLoadingState(false);
-    Sentry.captureException("Failed to send message to Mem0");
   } finally {
     isProcessingMem0 = false;
   }
