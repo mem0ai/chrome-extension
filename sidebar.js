@@ -187,11 +187,17 @@
       <div class="toggle-container">
         <span class="toggle-text">Memory enabled</span>
         <label class="switch">
-          <input type="checkbox" id="mem0Toggle" checked>
+          <input type="checkbox" id="mem0Toggle">
           <span class="slider round"></span>
         </label>
       </div>
     `;
+    chrome.storage.sync.get(['memory_enabled'], function(result) {
+      const toggleCheckbox = footerToggle.querySelector("#mem0Toggle");
+      toggleCheckbox.checked = result.memory_enabled !== false;
+      const toggleText = footerToggle.querySelector(".toggle-text");
+      toggleText.textContent = toggleCheckbox.checked ? "Memory enabled" : "Memory disabled";
+    });
     sidebarContainer.appendChild(footerToggle);
 
     // Add event listener for the toggle

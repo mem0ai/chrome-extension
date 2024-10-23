@@ -12,7 +12,6 @@ function getTextarea() {
 
 function setupInputObserver() {
   const textarea = getTextarea();
-  console.log(textarea);
   if (!textarea) {
     setTimeout(setupInputObserver, 500);
     return;
