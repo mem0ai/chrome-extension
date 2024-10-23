@@ -481,7 +481,6 @@ function initializeMem0Integration() {
   observer.observe(document.body, { childList: true, subtree: true });
 
   chrome.storage.onChanged.addListener((changes, namespace) => {
-    console.log("changes", changes);
     if (namespace === "sync" && changes.memory_enabled) {
       updateMemoryEnabled();
     }
