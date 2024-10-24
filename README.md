@@ -1,6 +1,6 @@
-# Mem0 Chrome Extension
+# Mem0 Chrome Extension — Cross-LLM Memory
 
-The Mem0 Chrome Extension allows you to manage your memory and preferences across various Gen AI applications such as ChatGPT, Claude, Perplexity, and more, providing you with personalized and relevant responses.
+Mem0 brings ChatGPT-style memory to all your favorite AI assistants. Share context seamlessly across ChatGPT, Claude, Perplexity, and more, making your AI interactions more personalized and efficient.
 
 <a href="https://chromewebstore.google.com/detail/claude-memory/onihkkbipkfeijkadecaafbgagkhglop?hl=en-GB&utm_source=ext_sidebar" style="display: inline-block; padding: 8px 12px; background-color: white; color: #3c4043; text-decoration: none; font-family: 'Roboto', Arial, sans-serif; font-size: 14px; font-weight: 500; border-radius: 4px; border: 1px solid #dadce0; box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);">
   <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome logo" style="height: 24px; vertical-align: middle; margin-right: 8px;">
@@ -14,16 +14,18 @@ Built using [Mem0](https://www.mem0.ai) ❤️
 
 ## Demo
 
-Check out this video of Mem0 Chrome Extension in action (full-resolution video available [here](https://youtu.be/4iP_ADT9N3E)):
+Watch the Mem0 Chrome Extension in action (full-resolution video available [here](https://youtu.be/4iP_ADT9N3E)):
 
-https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
+https://github.com/user-attachments/assets/a069a178-631e-4b35-a182-9f4fef7735c4
+
 
 ## Features
 
-- Store memories from your Claude conversations
-- Retrieve relevant memories during chats
-- Easily manage and organize your stored information
-- Seamless integration with the Claude AI interface
+- **Universal Memory Layer:** Share context across ChatGPT, Claude, Perplexity, and more
+- **Smart Context Detection:** Automatically captures relevant information from your conversations
+- **Intelligent Memory Retrieval:** Surfaces relevant memories at the right time
+- **One-click sync** with existing ChatGPT memories
+- **Memory dashboard** to manage all memories
 
 ## Installation
 
@@ -36,10 +38,19 @@ https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 
 ## Usage
 
-1. Click on the Mem0 Chrome Extension icon in your Chrome toolbar to open the popup.
-2. Enter your Mem0 API key and user ID in the settings.
-3. During conversations with Claude, click the "Mem0" button to retrieve relevant memories and use them in your conversations. This also tries to deduce new memories from your conversation.
-4. Your memories will be displayed, allowing you to reference them in your conversations.
+1. After installation, look for the Mem0 icon in your Chrome toolbar
+2. Sign in with Google
+3. Start chatting with any supported AI assistant
+4. For ChatGPT and Perplexity, just press enter while chatting as you would normally
+5. On Claude, click the Mem0 button or use shortcut ^ + M
+
+## ❤️ Free to Use
+
+Mem0 is completely free with:
+
+- No usage limits
+- No ads
+- All features included
 
 ## Configuration
 
@@ -50,14 +61,14 @@ https://github.com/user-attachments/assets/895f5ca2-ee76-4dee-a0e2-503adc8a6a26
 
 If you encounter any issues:
 
-- Ensure your API key is correct and has the necessary permissions.
-- Check that you're using a valid user ID.
-- Verify your internet connection.
-- For persistent problems, check the browser console for error messages.
+- Check your internet connection
+- Verify you're signed in correctly
+- Clear your browser cache if needed
+- Contact support if issues persist
 
 ## Privacy and Data Security
 
-Mem0 Chrome Extension stores your API key and user ID locally in your browser. Your messages are sent to the Mem0 API for extracting and retrieving memories.
+Your messages are sent to the Mem0 API for extracting and retrieving memories.
 
 ## Contributing
 
