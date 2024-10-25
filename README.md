@@ -14,7 +14,7 @@ Built using [Mem0](https://www.mem0.ai) ❤️
 
 ## Demo
 
-Watch the Mem0 Chrome Extension in action (full-resolution video available [here](https://youtu.be/4iP_ADT9N3E)):
+Watch the Mem0 Chrome Extension in action (full-resolution video available [here](https://www.youtube.com/watch?v=cByzXztn-YY)):
 
 https://github.com/user-attachments/assets/a069a178-631e-4b35-a182-9f4fef7735c4
 
