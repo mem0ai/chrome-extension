@@ -209,6 +209,17 @@
       toggleText.textContent = this.checked
         ? "Memory enabled"
         : "Memory disabled";
+      // Send toggle event to API
+      fetch(`https://api.mem0.ai/v1/extension/`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          event_type: "extension_toggle_button",
+          additional_data: { status: this.checked },
+        }),
+      }).catch(error => {
+        console.error("Error sending toggle event:", error);
+      });
       chrome.runtime.sendMessage({
         action: "toggleMem0",
         enabled: this.checked,
@@ -453,6 +464,15 @@
         editBtn.innerHTML = `<div class="loader"></div>`;
         editBtn.disabled = true;
 
+        // Send edit event to API
+        fetch(`https://api.mem0.ai/v1/extension/`, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ event_type: "extension_edit_event" }),
+        }).catch(error => {
+          console.error("Error sending edit event:", error);
+        });
+
         fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
           method: "PUT",
           headers: headers,
@@ -504,6 +524,16 @@
     deleteBtn.disabled = true;
 
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
+
+      // Send delete event to API
+      fetch(`https://api.mem0.ai/v1/extension/`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ event_type: "extension_delete_event" }),
+      }).catch(error => {
+        console.error("Error sending delete event:", error);
+      });
+
       const headers = getHeaders(data.apiKey, data.access_token);
       fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
         method: "DELETE",
@@ -702,6 +732,15 @@
             <div class="loader"></div>
           </div>
         `;
+
+        // Send add event to API
+        fetch(`https://api.mem0.ai/v1/extension/`, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ event_type: "extension_add_event" }),
+        }).catch(error => {
+          console.error("Error sending add event:", error);
+        });
 
         fetch("https://api.mem0.ai/v1/memories/", {
           method: "POST",
@@ -1211,6 +1250,18 @@
   }
 
   function logout() {
+    chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
+      const headers = getHeaders(data.apiKey, data.access_token);
+      fetch("https://api.mem0.ai/v1/extension/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          event_type: "extension_logout"
+        })
+      }).catch(error => {
+        console.error("Error sending logout event:", error);
+      });
+    });
     chrome.storage.sync.remove(
       ["apiKey", "userId", "access_token"],
       function () {
