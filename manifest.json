@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Mem0",
   "version": "1.3.4",
-  "description": "Own your memory across ChatGPT, Claude, Perplexity, and more. Get AI responses that truly understand you. Unlimited free usage and ad-free.",
+  "description": "🧠 Share context across ChatGPT, Claude & Perplexity. 🔄 No more repeating yourself to different AI assistants! ✨",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
