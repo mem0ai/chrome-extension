@@ -210,15 +210,18 @@
         ? "Memory enabled"
         : "Memory disabled";
       // Send toggle event to API
-      fetch(`https://api.mem0.ai/v1/extension/`, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify({
-          event_type: "extension_toggle_button",
-          additional_data: { status: this.checked },
-        }),
-      }).catch(error => {
-        console.error("Error sending toggle event:", error);
+      chrome.storage.sync.get(["memory_enabled", "apiKey", "access_token"], function (data) {
+        const headers = getHeaders(data.apiKey, data.access_token);
+        fetch(`https://api.mem0.ai/v1/extension/`, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({
+            event_type: "extension_toggle_button",
+            additional_data: { "status": data.memory_enabled },
+          }),
+        }).catch(error => {
+          console.error("Error sending toggle event:", error);
+        });
       });
       chrome.runtime.sendMessage({
         action: "toggleMem0",
@@ -524,6 +527,7 @@
     deleteBtn.disabled = true;
 
     chrome.storage.sync.get(["apiKey", "access_token"], function (data) {
+      const headers = getHeaders(data.apiKey, data.access_token);
 
       // Send delete event to API
       fetch(`https://api.mem0.ai/v1/extension/`, {
@@ -534,7 +538,6 @@
         console.error("Error sending delete event:", error);
       });
 
-      const headers = getHeaders(data.apiKey, data.access_token);
       fetch(`https://api.mem0.ai/v1/memories/${memoryId}/`, {
         method: "DELETE",
         headers: headers,
